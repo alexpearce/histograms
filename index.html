@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>D3.js histogram test</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+      padding-left: 10px;
+      color: #222;
+    }
+    /* SVG box */
+    #histogram svg {
+      border: 1px solid #e0e0e0;
+    }
+    /* Histogram bars */
+    .bar {
+      fill: steelblue;
+      shape-rendering: crispEdges;
+    }
+    .bars rect.selected {
+      fill: crimson;
+    }
+    /* Points */
+    .point {
+      fill: #000;
+    }
+    /* Error bars */
+    .error {
+      stroke-width: 1px;
+      stroke: #000;
+    }
+    /* Axes */
+    path.domain {
+      fill: none;
+      stroke: #000;
+      stroke-width: 1px;
+      shape-rendering: crispEdges;
+    }
+    .axis .tick line {
+      stroke: #000;
+      stroke-width: 1px;
+      shape-rendering: crispEdges;
+    }
+    .axis text {
+      fill: #222;
+    }
+    .grid {
+      fill: none;
+      stroke: #e0e0e0;
+    }
+    /* Brush, i.e. zoom box */
+    .brush .extent {
+      fill: #000;
+      fill-opacity: 0.125;
+      stroke: #000;
+      stroke-opacity: 0.2;
+      stroke-width: 1px;
+    }
+    /* 'Clear zoom' text */
+    .clear-button {
+      cursor: pointer;
+    }
+    .clear-button:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>D3 histogram test</h1>
+  <span id="h1">
+  </span>
+  <span id="h2">
+  </span>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="https://rawgithub.com/misoproject/d3.chart/master/d3.chart.min.js"></script>
+  <script src="data.js"></script>
+  <script src="d3.chart.BaseChart.js"></script>
+  <script src="d3.chart.Histogram.js"></script>
+  <script src="d3.chart.HistogramZoom.js"></script>
+  <script src="histogram.js"></script>
+</body>
+</html>

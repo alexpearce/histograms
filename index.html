@@ -62,8 +62,18 @@
     .clear-button {
       cursor: pointer;
     }
-    .clear-button:hover {
-      text-decoration: underline;
+    .clear-button rect {
+      fill: #eee;
+      stroke: #000;
+      stroke-width: 1px;
+      stroke-opacity: 0.125;
+      border-radius: 2px;
+    }
+    .clear-button:hover rect {
+      fill: #e4e4e4;
+    }
+    .clear-button:active rect {
+      fill: #ddd;
     }
   </style>
 </head>

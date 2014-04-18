@@ -39,20 +39,34 @@
             return;
           }
           // 1. Add a 'clear zoom' button if it doesn't exist
-          var clear_button = chart.base.select('.clear-button');
-          if (clear_button.empty() === true) {
+          var clearButton = chart.base.select('.clear-button');
+          if (clearButton.empty() === true) {
             // Cache the original domain so we restore to later
             chart.xScale.originalDomain = chart.xScale.domain();
-            clear_button = chart.base.append('text')
-              .attr('x', chart.width() - 30)
-              .attr('y', 30)
+            // Create a group to hold rectangle and text
+            var clearG = chart.base.append('g')
               .classed('clear-button', true)
-              .text('Clear zoom')
-              .on('click', function() {
+              .attr('transform', 'translate('
+                  + (chart.width() - chart.margins.left) + ','
+                  + chart.margins.top + ')'
+              );
+            // Add the rounded rectangle to act as a background
+            clearG.append('rect')
+              .attr('width', 100)
+              .attr('height', 40)
+              .attr('rx', 2)
+              .attr('ry', 2);
+            // Add the text
+            clearG.append('text')
+              .attr('x', 10)
+              .attr('y', 25)
+              .text('Clear zoom');
+            // When the group is clicked, undo the zoom and remove the button
+            clearG.on('click', function() {
                 chart.base.select('.brush').call(brush.clear());
                 // Restore to the origin, cached domain
                 updateScaleDomain(chart.xScale.originalDomain);
-                clear_button.remove();
+                clearG.remove();
               });
           }
           // 2. Update the x-axis domain

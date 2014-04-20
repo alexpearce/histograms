@@ -17,5 +17,4 @@
     });
   }
   makeHistogram(d3.select('#h1')).draw(binnedData);
-  makeHistogram(d3.select('#h2')).draw(binnedData);
 })(window, window.document);

@@ -4,7 +4,9 @@
     return container.append('svg')
       .chart('HistogramZoom')
       .width(300)
-      .height(250);
+      .height(250)
+      .xAxisLabel('Vertex position [mm]')
+      .yAxisLabel('Frequency');
   };
   var binnedData = [];
   for (var i = 0; i < histogramData['values'].length; i++) {

@@ -43,6 +43,9 @@ path.domain {
   fill: none;
   stroke: #e0e0e0;
 }
+.axis-label {
+  font-size: 0.9em;
+}
 /* Brush, i.e. zoom box */
 .brush .extent {
   fill: #000;

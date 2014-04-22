@@ -46,9 +46,9 @@
             // Create a group to hold rectangle and text
             var clearG = chart.base.append('g')
               .classed('clear-button', true)
-              .attr('transform', 'translate('
-                  + (chart.width() - chart.margins.left) + ','
-                  + chart.margins.top + ')'
+              .attr('transform', 'translate(' +
+                  (chart.width() - chart.margins.left) + ',' +
+                  chart.margins.top + ')'
               );
             // Add the rounded rectangle to act as a background
             clearG.append('rect')

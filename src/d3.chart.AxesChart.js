@@ -61,11 +61,11 @@
         .tickSize(-chart.width(), 0, 0).tickFormat('');
 
       if (transition === true) {
-        var transition = chart.base.transition().duration(250);
-        transition.select('.x.axis').call(chart.layers.xaxis);
-        transition.select('.x.grid').call(chart.layers.xgrid);
-        transition.select('.y.axis').call(chart.layers.yaxis);
-        transition.select('.y.grid').call(chart.layers.ygrid);
+        var t = chart.base.transition().duration(250);
+        t.select('.x.axis').call(chart.layers.xaxis);
+        t.select('.x.grid').call(chart.layers.xgrid);
+        t.select('.y.axis').call(chart.layers.yaxis);
+        t.select('.y.grid').call(chart.layers.ygrid);
       } else {
         chart.areas.xaxis.call(chart.layers.xaxis);
         chart.areas.xgrid.call(chart.layers.xgrid);

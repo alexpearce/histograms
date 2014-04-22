@@ -19,16 +19,16 @@
         left: 50,
         right: 10,
         padding: 10
-      }
+      };
 
       // Defaults
       // Chart width
-      chart._width = chart.base.attr('width')
-        ? chart.base.attr('width') - (chart.margins.right + chart.margins.left)
+      chart._width = chart.base.attr('width') ?
+        chart.base.attr('width') - (chart.margins.right + chart.margins.left)
         : 200;
       // Chart height
-      chart._height = chart.base.attr('height')
-        ? chart.base.attr('height') - (chart.margins.top + chart.margins.bottom)
+      chart._height = chart.base.attr('height') ?
+        chart.base.attr('height') - (chart.margins.top + chart.margins.bottom)
         : 200;
 
       // Make sure the container is set

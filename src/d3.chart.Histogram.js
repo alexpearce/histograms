@@ -143,7 +143,7 @@
       chart.xScale.domain([lowBin.x, highBin.dx]);
       var yExtent = d3.extent(data, function(d) { return d.y; });
       // Histogram y-axis should either start at zero or negative values
-      var yLow = yExtent[0] > 0. ? 0. : yExtent[0];
+      var yLow = yExtent[0] > 0.0 ? 0.0 : yExtent[0];
       // 5% padding on the y-axis
       chart.yScale.domain([yExtent[0], 1.05*yExtent[1]]);
       chart.drawAxes();

@@ -1,0 +1,24 @@
+{
+  "name": "d3.chart.histograms",
+  "version": "0.0.1",
+  "description": "Histogram drawing in D3.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexpearce/histograms.git"
+  },
+  "keywords": [
+    "d3.js",
+    "chart",
+    "graph",
+    "histogram"
+  ],
+  "homepage": "https://github.com/alexpearce/histograms",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-concat": "^0.4.0",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-uglify": "^0.4.0",
+    "grunt-contrib-watch": "^0.6.1"
+  }
+}

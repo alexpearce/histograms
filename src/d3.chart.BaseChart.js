@@ -16,7 +16,7 @@
       chart.margins = {
         top: 10,
         bottom: 40,
-        left: 50,
+        left: 60,
         right: 10,
         padding: 10
       };

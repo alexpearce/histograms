@@ -8,28 +8,24 @@
       .xAxisLabel('Vertex position [mm]')
       .yAxisLabel('Frequency');
   };
-  var gaussian = [];
-  var landau = [];
-  for (var i = 0; i < gaussianData['values'].length; i++) {
-    var bins = gaussianData['binning'][i];
-    gaussian.push({
-      x: bins[0],
-      dx: bins[1],
-      y: gaussianData['values'][i],
-      xErr: gaussianData['uncertainties'][i]
-    });
-  }
-  for (var i = 0; i < landauData['values'].length; i++) {
-    var bins = landauData['binning'][i];
-    landau.push({
-      x: -bins[0],
-      dx: -bins[1],
-      y: landauData['values'][i],
-      xErr: landauData['uncertainties'][i]
-    });
-  }
-  var h = makeHistogram(d3.select('#h1'));
-  h.draw(gaussian);
-  var h = makeHistogram(d3.select('#h2'));
-  h.draw(landau);
+  // Manipulate the input data to a format accepted by the Histogram chart
+  var formatData = function(data) {
+    var rtn = [], bins;
+    for (var i = 0; i < data['values'].length; i++) {
+      bins = data['binning'][i];
+      rtn.push({
+        x: bins[0],
+        dx: bins[1],
+        y: data['values'][i],
+        xErr: data['uncertainties'][i]
+      });
+    }
+    return rtn;
+  };
+  var gaussian = formatData(gaussianData),
+      landau = formatData(landauData);
+  var hGauss = makeHistogram(d3.select('#h1')),
+      hLandau = makeHistogram(d3.select('#h2'));
+  hGauss.draw(gaussian);
+  hLandau.draw(landau);
 })(window, window.document);

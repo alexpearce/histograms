@@ -7,7 +7,8 @@ Contributing
 ------------
 
 All the JavaScript files are under `src/`.
-To build the production scripts `d3.chart.histograms.js` and `d3.chart.histograms.min.js` you'll need [Grunt](http://gruntjs.com/).
+To build the production scripts `d3.chart.histograms.js` and `d3.chart.histograms.min.js` on the master branch you'll need [Grunt](http://gruntjs.com/).
+Alternatively, you can download a [tagged release](https://github.com/alexpearce/histograms/releases).
 
 Clone the repository
 

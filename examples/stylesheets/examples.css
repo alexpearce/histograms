@@ -42,6 +42,7 @@ path.domain {
 .grid {
   fill: none;
   stroke: #e0e0e0;
+  shape-rendering: crispEdges;
 }
 .axis-label {
   font-size: 0.9em;
@@ -53,6 +54,7 @@ path.domain {
   stroke: #000;
   stroke-opacity: 0.2;
   stroke-width: 1px;
+  shape-rendering: crispEdges;
 }
 /* 'Clear zoom' text */
 .clear-button {

@@ -35,7 +35,7 @@
           enter: function() {
             return this
               .attr('width', function(d) {
-                return chart.xScale(d.dx) - chart.xScale(d.x);
+                return Math.abs(chart.xScale(d.dx) - chart.xScale(d.x));
               })
               .attr('height', function(d) {
                 return 0;
@@ -62,7 +62,7 @@
           'update:transition': function() {
             return this
               .attr('width', function(d) {
-                return chart.xScale(d.dx) - chart.xScale(d.x);
+                return Math.abs(chart.xScale(d.dx) - chart.xScale(d.x));
               })
               .attr('x', function(d) {
                 return chart.xScale(d.x);
@@ -133,19 +133,22 @@
       */
     },
     // Set up our scales to match the extent of the data
-    // Assumes data sorted in ascending x-value
     transform: function(data) {
       var chart = this;
       // Cache data so we can use it to redraw later
       chart.data = data;
-      var lowBin = data[0],
-          highBin = data[data.length - 1];
-      chart.xScale.domain([lowBin.x, highBin.dx]);
-      var yExtent = d3.extent(data, function(d) { return d.y; });
+      // Get the upper and lower limits for x, dx, and y in the data
+      var xExtent = d3.extent(data.map(function(d) { return d.x; })),
+          dxExtent = d3.extent(data.map(function(d) { return d.dx; })),
+          yExtent = d3.extent(data, function(d) { return d.y; });
+      // The domain is from the lower bound of the lowest bin to the higher
+      // bound of the highest bin
+      chart.xScale.domain([xExtent[0], dxExtent[1]]);
       // Histogram y-axis should either start at zero or negative values
       var yLow = yExtent[0] > 0.0 ? 0.0 : yExtent[0];
       // 5% padding on the y-axis
-      chart.yScale.domain([yExtent[0], 1.05*yExtent[1]]);
+      chart.yScale.domain([yLow, 1.05*yExtent[1]]);
+      // (Re)draw the axes as we've changed the scale
       chart.drawAxes();
       return data;
     }

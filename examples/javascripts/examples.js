@@ -8,15 +8,28 @@
       .xAxisLabel('Vertex position [mm]')
       .yAxisLabel('Frequency');
   };
-  var binnedData = [];
-  for (var i = 0; i < histogramData['values'].length; i++) {
-    var bins = histogramData['binning'][i];
-    binnedData.push({
+  var gaussian = [];
+  var landau = [];
+  for (var i = 0; i < gaussianData['values'].length; i++) {
+    var bins = gaussianData['binning'][i];
+    gaussian.push({
       x: bins[0],
       dx: bins[1],
-      y: histogramData['values'][i],
-      xErr: histogramData['uncertainties'][i]
+      y: gaussianData['values'][i],
+      xErr: gaussianData['uncertainties'][i]
     });
   }
-  makeHistogram(d3.select('#h1')).draw(binnedData);
+  for (var i = 0; i < landauData['values'].length; i++) {
+    var bins = landauData['binning'][i];
+    landau.push({
+      x: -bins[0],
+      dx: -bins[1],
+      y: landauData['values'][i],
+      xErr: landauData['uncertainties'][i]
+    });
+  }
+  var h = makeHistogram(d3.select('#h1'));
+  h.draw(gaussian);
+  var h = makeHistogram(d3.select('#h2'));
+  h.draw(landau);
 })(window, window.document);

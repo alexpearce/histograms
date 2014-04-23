@@ -8,6 +8,9 @@
       // Define blank x- and y-axis labels
       chart._xAxisLabel = '';
       chart._yAxisLabel = '';
+      // Define zero x- and y-scale exponent
+      chart._xExponent = 0;
+      chart._yExponent = 0;
 
       // Transform scale; from data coordinates to canvas coordinates
       chart.xScale = d3.scale.linear().range([0, chart.width()]);
@@ -55,9 +58,9 @@
         .orient('bottom')
         .tickSize(-chart.height(), 0, 0).tickFormat('');
       chart.layers.yaxis = d3.svg.axis()
-         .ticks(5)
-         .scale(chart.yScale)
-         .orient('left');
+        .ticks(5)
+        .scale(chart.yScale)
+        .orient('left');
       chart.layers.ygrid = d3.svg.axis()
         .ticks(5)
         .scale(chart.yScale)
@@ -78,8 +81,15 @@
         chart.layers.xgrid.tickSize(-chart.height(), 0, 0);
       });
     },
+    // All charts deriving from this one should call drawAxes whenever there
+    // is a scale change, i.e. if chart.xScale or chart.yScale is updated
     drawAxes: function(transition) {
       var chart = this;
+
+      // Reset the tick formatter to the default
+      // By doing this, our manipulation later doesn't screw things up,
+      // as the default ticks are put back in place before we touch them
+      chart.layers.xaxis.tickFormat(null);
 
       if (transition === true) {
         var t = chart.base.transition().duration(250);
@@ -93,13 +103,74 @@
         chart.areas.yaxis.call(chart.layers.yaxis);
         chart.areas.ygrid.call(chart.layers.ygrid);
       }
+
+      // Return the base-10 exponent of the absolute value of x
+      // If you write x in scientific notation, this will return the exponent
+      var exponent = function(x) {
+        return Math.floor(Math.log(Math.abs(x))/Math.LN10);
+      };
+
+      // Return the multiple-of-three exponent for the array of tick values
+      // The exponent returned is the maximum exponent within the ticks,
+      // rounded down to the nearest multiple of three
+      // This is more familiar, matching SI prefixes (kilo 10^3, mega 10^6, etc.)
+      var ticksExponent = function(ticks) {
+        // Calculate the [minimum, maximum] tick values,
+        // then the base-10 exponent for these min/max values
+        // Use the biggest exponent as the one we show
+        var oldTicks = ticks,
+            extent = d3.extent(oldTicks),
+            minExponent = exponent(extent[0]),
+            maxExponent = exponent(extent[1]),
+            exp = d3.max([maxExponent, minExponent]);
+        return 3*Math.floor(exp/3);
+      };
+
+      // Return a function which accepts a value and tick number,
+      // itself returning an appropriately rounded value
+      // A nice precision is one fine enough such that adjacent ticks aren't rounded to be equal
+      // For example, two adajacent ticks with values (0.998, 0.999) require
+      // three digits of precision, whereas (12.5, 23.5) requires zero
+      // This method assumes all ticks are spaced equally apart
+      var siTickFormatter = function(ticks) {
+        var exponentDiff = exponent(ticks[0] - ticks[1]);
+        // Only negative exponents need decimal places
+        exponentDiff = exponentDiff < 0 ? Math.abs(exponentDiff) : 0;
+        // Format the new tick values to the calculated fixed precision
+        return function(value, tickNumber) {
+          return ticks[tickNumber].toFixed(exponentDiff);
+        };
+      };
+
+      // Transform the tick values automatically created by D3 in to scientific notation,
+      // with the exponent rounded to the nearest multiple of three
+      var xTicks = chart.xScale.ticks(chart.layers.xaxis.ticks()[0]),
+          yTicks = chart.yScale.ticks(chart.layers.yaxis.ticks()[0]);
+      chart._xExponent = ticksExponent(xTicks);
+      chart._yExponent = ticksExponent(yTicks);
+      var xNewTicks = xTicks.map(function(d) { return d/Math.pow(10, chart._xExponent); }),
+          yNewTicks = yTicks.map(function(d) { return d/Math.pow(10, chart._yExponent); });
+      chart.layers.xaxis.tickFormat(siTickFormatter(xNewTicks));
+      chart.layers.yaxis.tickFormat(siTickFormatter(yNewTicks));
+      // Update the axes and labels to reflect the new exponent
+      chart.areas.xaxis.call(chart.layers.xaxis);
+      chart.xAxisLabel(chart.xAxisLabel());
+      chart.areas.yaxis.call(chart.layers.yaxis);
+      chart.yAxisLabel(chart.yAxisLabel());
     },
     xAxisLabel: function(newLabel) {
       if (arguments.length === 0) {
         return this._xAxisLabel;
       }
       this._xAxisLabel = newLabel;
-      this.areas.xlabel.select('text').text(this.xAxisLabel());
+      // Append the value of the exponent, if there is one
+      if (this._xExponent !== 0) {
+        this.areas.xlabel.select('text')
+          .text(this.xAxisLabel() + ' ×1e' + this._xExponent);
+      } else {
+        this.areas.xlabel.select('text')
+          .text(this.xAxisLabel());
+      }
       return this;
     },
     yAxisLabel: function(newLabel) {
@@ -107,7 +178,14 @@
         return this._yAxisLabel;
       }
       this._yAxisLabel = newLabel;
-      this.areas.ylabel.select('text').text(this.yAxisLabel());
+      // Append the value of the exponent, if there is one
+      if (this._yExponent !== 0) {
+        this.areas.ylabel.select('text')
+          .text(this.yAxisLabel() + ' ×1e' + this._yExponent);
+      } else {
+        this.areas.ylabel.select('text')
+          .text(this.yAxisLabel());
+      }
       return this;
     }
   });

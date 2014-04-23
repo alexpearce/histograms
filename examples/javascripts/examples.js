@@ -10,9 +10,9 @@
   };
   // Manipulate the input data to a format accepted by the Histogram chart
   var formatData = function(data) {
-    var rtn = [], bins;
+    var rtn = [];
     for (var i = 0; i < data['values'].length; i++) {
-      bins = data['binning'][i];
+      var bins = data['binning'][i];
       rtn.push({
         x: bins[0],
         dx: bins[1],

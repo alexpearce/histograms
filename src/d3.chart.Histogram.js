@@ -18,6 +18,13 @@
       // chart.layers.points = innerG.append('g')
       //   .classed('points', true);
 
+      // Create line area shape for use in the layer
+      var linearea = d3.svg.area()
+        .interpolate('step-before')
+        .x(function(d) { return chart.xScale(d.dx); })
+        .y1(function(d) { return chart.yScale(d.y); })
+        .y0(function(d) { return d3.max(chart.yScale.range()); });
+
       chart.layer('line', chart.layers.line, {
         dataBind: function(data) {
           return this.selectAll('path').data([data]);
@@ -30,26 +37,14 @@
         },
         events: {
           enter: function() {
-            var yMax = d3.max(chart.yScale.range());
-            var line = d3.svg.area()
-              .interpolate('step-before')
-              .x(function(d) { return chart.xScale(d.dx); })
-              .y1(function(d) { return chart.yScale(d.y); })
-              .y0(function(d) { return yMax; });
-            return this.attr('d', line);
+            return this.attr('d', linearea);
           },
           update: function() {
             // TODO assumes no y-scale change
             return this;
           },
           'update:transition': function() {
-            var yMax = d3.max(chart.yScale.range());
-            var line = d3.svg.area()
-              .interpolate('step-before')
-              .x(function(d) { return chart.xScale(d.dx); })
-              .y1(function(d) { return chart.yScale(d.y); })
-              .y0(function(d) { return yMax; });
-            return this.attr('d', line);
+            return this.attr('d', linearea);
           }
         }
       });

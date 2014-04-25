@@ -8,9 +8,9 @@
       // Get inner 'canvas'
       var innerG = chart.base.select('g');
 
-      // Then the bars are drawn
-      chart.layers.bars = innerG.append('g')
-        .classed('bars', true);
+      // Draw the line
+      chart.layers.line = innerG.append('g')
+        .classed('line', true);
       // Then the uncertainties
       // chart.layers.errors = innerG.append('g')
       //   .classed('errors', true);
@@ -18,55 +18,38 @@
       // chart.layers.points = innerG.append('g')
       //   .classed('points', true);
 
-      // Layer for the bars
-      chart.layer('bars', chart.layers.bars, {
-        // Prepare data for binding, returning data join
+      chart.layer('line', chart.layers.line, {
         dataBind: function(data) {
-          return this.selectAll('rect').data(data);
+          return this.selectAll('path').data([data]);
         },
-        // Append the expected elements and set their attributes
         insert: function() {
-          return this.append('rect').classed('bar', true);
+          return this.append('path')
+            .classed('line', true)
+            .attr('fill', 'none')
+            .attr('stroke', 'rgb(38, 17, 150)');
         },
-        // Define lifecycle events
-        // TODO extract transitions to HistogramAnimated? Toggable?
         events: {
-          // Update bar attributes to reflect the data
           enter: function() {
-            return this
-              .attr('width', function(d) {
-                return Math.abs(chart.xScale(d.dx) - chart.xScale(d.x));
-              })
-              .attr('height', function(d) {
-                return 0;
-              })
-              .attr('x', function(d) {
-                return chart.xScale(d.x);
-              })
-              .attr('transform', 'translate(0, ' + chart.height() + ')');
-          },
-          'enter:transition': function() {
-            var chart = this.chart();
-            this.duration(250)
-              .attr('height', function(d) {
-                return chart.height() - chart.yScale(d.y);
-              })
-              .attr('transform', function(d) {
-                return 'translate(0, ' + chart.yScale(d.y) + ')';
-              });
+            var yMax = d3.max(chart.yScale.range());
+            var line = d3.svg.area()
+              .interpolate('step-before')
+              .x(function(d) { return chart.xScale(d.dx); })
+              .y1(function(d) { return chart.yScale(d.y); })
+              .y0(function(d) { return yMax; });
+            return this.attr('d', line);
           },
           update: function() {
             // TODO assumes no y-scale change
             return this;
           },
           'update:transition': function() {
-            return this
-              .attr('width', function(d) {
-                return Math.abs(chart.xScale(d.dx) - chart.xScale(d.x));
-              })
-              .attr('x', function(d) {
-                return chart.xScale(d.x);
-              });
+            var yMax = d3.max(chart.yScale.range());
+            var line = d3.svg.area()
+              .interpolate('step-before')
+              .x(function(d) { return chart.xScale(d.dx); })
+              .y1(function(d) { return chart.yScale(d.y); })
+              .y0(function(d) { return yMax; });
+            return this.attr('d', line);
           }
         }
       });

@@ -153,6 +153,7 @@
       chart.layers.xaxis.tickFormat(siTickFormatter(xNewTicks));
       chart.layers.yaxis.tickFormat(siTickFormatter(yNewTicks));
       // Update the axes and labels to reflect the new exponent
+      // TODO making these calls cancels the any ongoing axis transition
       chart.areas.xaxis.call(chart.layers.xaxis);
       chart.xAxisLabel(chart.xAxisLabel());
       chart.areas.yaxis.call(chart.layers.yaxis);

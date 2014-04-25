@@ -123,10 +123,11 @@
       // Get the upper and lower limits for x, dx, and y in the data
       var xExtent = d3.extent(data.map(function(d) { return d.x; })),
           dxExtent = d3.extent(data.map(function(d) { return d.dx; })),
+          xPadding = 0.05*Math.abs(xExtent[0] - dxExtent[1]),
           yExtent = d3.extent(data, function(d) { return d.y; });
       // The domain is from the lower bound of the lowest bin to the higher
-      // bound of the highest bin
-      chart.xScale.domain([xExtent[0], dxExtent[1]]);
+      // bound of the highest bin, with 5% padding either side
+      chart.xScale.domain([xExtent[0] - xPadding, dxExtent[1] + xPadding]);
       // Histogram y-axis should either start at zero or negative values
       var yLow = yExtent[0] > 0.0 ? 0.0 : yExtent[0];
       // 5% padding on the y-axis

@@ -7,13 +7,9 @@ body {
 #histogram svg {
   border: 1px solid #e0e0e0;
 }
-/* Histogram bars */
-.bar {
-  fill: steelblue;
+/* Histogram line areas */
+.line {
   shape-rendering: crispEdges;
-}
-.bars rect.selected {
-  fill: crimson;
 }
 /* Points */
 .point {

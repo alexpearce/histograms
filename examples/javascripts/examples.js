@@ -25,7 +25,13 @@
   var gaussian = formatData(gaussianData),
       landau = formatData(landauData);
   var hGauss = makeHistogram(d3.select('#h1')),
-      hLandau = makeHistogram(d3.select('#h2'));
+      hLandau = makeHistogram(d3.select('#h2')),
+      hTest = makeHistogram(d3.select('#h3'));
   hGauss.draw(gaussian);
   hLandau.draw(landau);
+  hTest.draw(formatData({
+    'values': [0, 1, 2, 3, 4, 5],
+    'binning': [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]],
+    'uncertainties': [0]
+  }));
 })(window, window.document);

@@ -11,6 +11,7 @@ module.exports = function(grunt) {
           'src/d3.chart.BaseChart.js',
           'src/d3.chart.AxesChart.js',
           'src/d3.chart.Histogram.js',
+          'src/d3.chart.2DHistogram.js',
           'src/d3.chart.HistogramZoom.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
@@ -23,7 +24,8 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+            'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>'],
+	    '../root-web-monitoring/webmonitor/static/javascripts/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
         }
       }
     },

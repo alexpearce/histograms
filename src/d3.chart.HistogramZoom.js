@@ -20,6 +20,10 @@
         chart.layers.line.draw(chart.data);
       };
 
+      var buttonWidth = 100,
+          buttonHeight = 40,
+          padding = 10;
+
       // Brushes for zooming
       var brush = d3.svg.brush()
         .x(chart.xScale)
@@ -38,13 +42,13 @@
             var clearG = chart.base.append('g')
               .classed('clear-button', true)
               .attr('transform', 'translate(' +
-                  (chart.width() - chart.margins.left) + ',' +
-                  chart.margins.top + ')'
+                  (chart.width() + chart.margins.left - buttonWidth - padding) + ',' +
+                  (chart.margins.top + padding) + ')'
               );
             // Add the rounded rectangle to act as a background
             clearG.append('rect')
-              .attr('width', 100)
-              .attr('height', 40)
+              .attr('width', buttonWidth)
+              .attr('height', buttonHeight)
               .attr('rx', 2)
               .attr('ry', 2);
             // Add the text

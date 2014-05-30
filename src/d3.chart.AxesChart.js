@@ -19,6 +19,19 @@
       // Get inner 'canvas'
       var innerG = chart.base.select('g');
 
+      // Create an axis with a given scale, number of ticks, and orientation
+      // The ticks are positioned 'inside' the plot, e.g. an axis with
+      // orientation 'bottom' will have ticks pointing up
+      var createAxis = function(scale, ticks, orientation) {
+        var axis = d3.svg.axis();
+        return axis.ticks(ticks)
+          .scale(scale)
+          .orient(orientation)
+          .innerTickSize(-axis.innerTickSize())
+          .outerTickSize(-axis.outerTickSize())
+          .tickPadding(axis.tickPadding() + 4);
+      };
+
       // We define groups by z-order
       // Grid lines are drawn under everything
       chart.areas.xgrid = innerG.append('g')
@@ -30,8 +43,13 @@
       chart.areas.xaxis = innerG.append('g')
         .classed('x axis', true)
         .attr('transform', 'translate(0,' + chart.height() + ')');
+      chart.areas.xaxistop = innerG.append('g')
+        .classed('x axis', true);
       chart.areas.yaxis = innerG.append('g')
         .classed('y axis', true);
+      chart.areas.yaxisright = innerG.append('g')
+        .classed('y axis', true)
+        .attr('transform', 'translate(' + chart.width() + ', 0)');
 
       // Axes labels (always label your axes, kids!)
       chart.areas.xlabel = chart.base.append('g')
@@ -48,61 +66,21 @@
         .attr('dy', '1em');
 
       // Create axis and grid layers
-      chart.layers.xaxis = d3.svg.axis()
-        .ticks(5)
-        .scale(chart.xScale)
-        .orient('bottom');
-      chart.layers.xgrid = d3.svg.axis()
-        .ticks(5)
-        .scale(chart.xScale)
-        .orient('bottom')
-        .tickSize(-chart.height(), 0, 0).tickFormat('');
-      chart.layers.yaxis = d3.svg.axis()
-        .ticks(5)
-        .scale(chart.yScale)
-        .orient('left');
-      chart.layers.ygrid = d3.svg.axis()
-        .ticks(5)
-        .scale(chart.yScale)
-        .orient('left')
-        .tickSize(-chart.width(), 0, 0).tickFormat('');
-
-      // Update width/height dependent elements on change
-      chart.on('change:width', function() {
-        chart.xScale.range([0, chart.width()]);
-        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
-        chart.layers.ygrid.tickSize(-chart.width(), 0, 0);
-      });
-      chart.on('change:height', function() {
-        chart.yScale.range([chart.height(), 0]);
-        chart.areas.xaxis.attr('transform', 'translate(0,' + chart.height() + ')');
-        chart.areas.xgrid.attr('transform', 'translate(0,' + chart.height() + ')');
-        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
-        chart.layers.xgrid.tickSize(-chart.height(), 0, 0);
-      });
-    },
-    // All charts deriving from this one should call drawAxes whenever there
-    // is a scale change, i.e. if chart.xScale or chart.yScale is updated
-    drawAxes: function(transition) {
-      var chart = this;
-
-      // Reset the tick formatter to the default
-      // By doing this, our manipulation later doesn't screw things up,
-      // as the default ticks are put back in place before we touch them
-      chart.layers.xaxis.tickFormat(null);
-
-      if (transition === true) {
-        var t = chart.base.transition().duration(250);
-        t.select('.x.axis').call(chart.layers.xaxis);
-        t.select('.x.grid').call(chart.layers.xgrid);
-        t.select('.y.axis').call(chart.layers.yaxis);
-        t.select('.y.grid').call(chart.layers.ygrid);
-      } else {
-        chart.areas.xaxis.call(chart.layers.xaxis);
-        chart.areas.xgrid.call(chart.layers.xgrid);
-        chart.areas.yaxis.call(chart.layers.yaxis);
-        chart.areas.ygrid.call(chart.layers.ygrid);
-      }
+      // TODO configurable tick numbers?
+      var xTicks = 5,
+          yTicks = 5;
+      chart.layers.xaxis = createAxis(chart.xScale, xTicks, 'bottom');
+      chart.layers.xaxistop = createAxis(chart.xScale, xTicks, 'top')
+        .tickFormat('');
+      chart.layers.xgrid = createAxis(chart.xScale, xTicks, 'bottom')
+        .tickSize(-chart.height(), 0, 0)
+        .tickFormat('');
+      chart.layers.yaxis = createAxis(chart.yScale, yTicks, 'left');
+      chart.layers.yaxisright = createAxis(chart.yScale, yTicks, 'right')
+        .tickFormat('');
+      chart.layers.ygrid = createAxis(chart.yScale, yTicks, 'left')
+        .tickSize(-chart.width(), 0, 0)
+        .tickFormat('');
 
       // Return the base-10 exponent of the absolute value of x
       // If you write x in scientific notation, this will return the exponent
@@ -132,32 +110,69 @@
       // For example, two adajacent ticks with values (0.998, 0.999) require
       // three digits of precision, whereas (12.5, 23.5) requires zero
       // This method assumes all ticks are spaced equally apart
-      var siTickFormatter = function(ticks) {
-        var exponentDiff = exponent(ticks[0] - ticks[1]);
-        // Only negative exponents need decimal places
-        exponentDiff = exponentDiff < 0 ? Math.abs(exponentDiff) : 0;
-        // Format the new tick values to the calculated fixed precision
+      var siTickFormatter = function(scale, axis, callback) {
+        // By placing this logic inside the returned function, the values
+        // are updated on each call
+        // Placing them outside would result in stale `ticks` and `exp` values
         return function(value, tickNumber) {
-          return ticks[tickNumber].toFixed(exponentDiff);
+          var ticks = scale.ticks(axis.ticks()[0]),
+              exp = ticksExponent(ticks),
+              newTicks = ticks.map(function(d) { return d/Math.pow(10, exp); } );
+          var expDiff = exponent(newTicks[0] - newTicks[1]);
+          expDiff = expDiff < 0 ? Math.abs(expDiff) : 0;
+          if (typeof callback === 'function') {
+            callback(exp);
+          }
+          return (value/Math.pow(10, exp)).toFixed(expDiff);
         };
       };
 
-      // Transform the tick values automatically created by D3 in to scientific notation,
-      // with the exponent rounded to the nearest multiple of three
-      var xTicks = chart.xScale.ticks(chart.layers.xaxis.ticks()[0]),
-          yTicks = chart.yScale.ticks(chart.layers.yaxis.ticks()[0]);
-      chart._xExponent = ticksExponent(xTicks);
-      chart._yExponent = ticksExponent(yTicks);
-      var xNewTicks = xTicks.map(function(d) { return d/Math.pow(10, chart._xExponent); }),
-          yNewTicks = yTicks.map(function(d) { return d/Math.pow(10, chart._yExponent); });
-      chart.layers.xaxis.tickFormat(siTickFormatter(xNewTicks));
-      chart.layers.yaxis.tickFormat(siTickFormatter(yNewTicks));
-      // Update the axes and labels to reflect the new exponent
-      // TODO making these calls cancels the any ongoing axis transition
-      chart.areas.xaxis.call(chart.layers.xaxis);
-      chart.xAxisLabel(chart.xAxisLabel());
-      chart.areas.yaxis.call(chart.layers.yaxis);
-      chart.yAxisLabel(chart.yAxisLabel());
+      // Create formatters for the x- and y-axis
+      // The callback updates the axis label when the ticks are updated
+      var xFormatter = siTickFormatter(chart.xScale, chart.layers.xaxis, function(exp) {
+        chart._xExponent = exp;
+        chart.xAxisLabel(chart.xAxisLabel());
+      });
+      var yFormatter = siTickFormatter(chart.yScale, chart.layers.yaxis, function(exp) {
+        chart._yExponent = exp;
+        chart.yAxisLabel(chart.yAxisLabel());
+      });
+      chart.layers.xaxis.tickFormat(xFormatter);
+      chart.layers.yaxis.tickFormat(yFormatter);
+
+      // Update width/height dependent elements on change
+      chart.on('change:width', function() {
+        chart.xScale.range([0, chart.width()]);
+        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
+        chart.areas.yaxisright.attr('transform', 'translate(' + chart.width() + ', 0)');
+        chart.layers.ygrid.tickSize(-chart.width(), 0, 0);
+      });
+      chart.on('change:height', function() {
+        chart.yScale.range([chart.height(), 0]);
+        chart.areas.xaxis.attr('transform', 'translate(0,' + chart.height() + ')');
+        chart.areas.xgrid.attr('transform', 'translate(0,' + chart.height() + ')');
+        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
+        chart.layers.xgrid.tickSize(-chart.height(), 0, 0);
+      });
+    },
+    // All charts deriving from this one should call drawAxes whenever there
+    // is a scale change, i.e. if chart.xScale or chart.yScale is updated
+    drawAxes: function(transition) {
+      var chart = this;
+
+      var dur = transition === true ? 250 : 0;
+      chart.areas.xaxis.transition().duration(dur)
+        .call(chart.layers.xaxis);
+      chart.areas.xaxistop.transition().duration(dur)
+        .call(chart.layers.xaxistop);
+      chart.areas.xgrid.transition().duration(dur)
+        .call(chart.layers.xgrid);
+      chart.areas.yaxis.transition().duration(dur)
+        .call(chart.layers.yaxis);
+      chart.areas.yaxisright.transition().duration(dur)
+        .call(chart.layers.yaxisright);
+      chart.areas.ygrid.transition().duration(dur)
+        .call(chart.layers.ygrid);
     },
     xAxisLabel: function(newLabel) {
       if (arguments.length === 0) {

@@ -69,3 +69,14 @@ path.domain {
 .clear-button:active rect {
   fill: #ddd;
 }
+
+/* 2D histograms */
+.Histogram2D .grid line {
+  stroke: none;
+}
+
+.legend-box {
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}

@@ -11,7 +11,7 @@
 
   var make2DHistogram = function(container) {
     return container.append('svg')
-      .chart('2DHistogram')
+      .chart('Histogram2D')
       .width(600)
       .height(450)
       .xAxisLabel('x')

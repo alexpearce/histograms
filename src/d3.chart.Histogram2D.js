@@ -1,6 +1,6 @@
 (function(d3, undefined) {
   'use strict';
-  d3.chart('AxesChart').extend('2DHistogram', {
+  d3.chart('AxesChart').extend('Histogram2D', {
     initialize: function() {
       var chart = this;
       chart.base.classed('Histogram2D', true);

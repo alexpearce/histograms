@@ -3,7 +3,7 @@
   d3.chart('BaseChart').extend('AxesChart', {
     initialize: function() {
       var chart = this;
-      chart.base.classed('AxesChart');
+      chart.base.classed('AxesChart', true);
 
       // Define blank x- and y-axis labels
       chart._xAxisLabel = '';

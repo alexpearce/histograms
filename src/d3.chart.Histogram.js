@@ -3,7 +3,7 @@
   d3.chart('AxesChart').extend('Histogram', {
     initialize: function() {
       var chart = this;
-      chart.base.classed('Histogram');
+      chart.base.classed('Histogram', true);
 
       // Get inner 'canvas'
       var innerG = chart.base.select('g');

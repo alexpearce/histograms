@@ -12,6 +12,7 @@
   d3.chart('BaseChart', {
     initialize: function() {
       var chart = this;
+      chart.base.classed('BaseChart', true);
 
       chart.margins = {
         top: 10,

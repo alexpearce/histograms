@@ -3,6 +3,7 @@
   d3.chart('Histogram').extend('HistogramZoom', {
     initialize: function() {
       var chart = this;
+      chart.base.classed('HistogramZoom', true);
 
       // Add a clipping path to hide histogram outside chart area
       var clipRect = chart.base.append('defs').append('clipPath')

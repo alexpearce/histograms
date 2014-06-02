@@ -8,8 +8,8 @@
       // Get inner 'canvas'
       var innerG = chart.base.select('g');
 
-      // Draw the line
-      chart.layers.line = innerG.append('g')
+      // Draw the line underneath the axes, but above the grid
+      chart.layers.line = innerG.insert('g', '.axis')
         .classed('line', true);
       // Then the uncertainties
       // chart.layers.errors = innerG.append('g')

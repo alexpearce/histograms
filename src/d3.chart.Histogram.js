@@ -27,13 +27,19 @@
 
       chart.layer('line', chart.layers.line, {
         dataBind: function(data) {
-          return this.selectAll('path').data([data]);
+          // TODO It's a little ugly having this map here, it should really be in transform,
+          // but I can't think of a nice way to preserve the other attributes and keep the
+          // nicity of being able to do `chart.layers.line.draw(chart.data)`
+          var values = data.map(function(d) { return d.values; });
+          return this.selectAll('path').data(values);
         },
         insert: function() {
+          // Fetch colours from data, else using blue as default
+          var colours = chart.data.map(function(d) { return d.colour || 'rgb(38, 17, 150)'; });
           return this.append('path')
             .classed('line', true)
             .attr('fill', 'none')
-            .attr('stroke', 'rgb(38, 17, 150)');
+            .attr('stroke', function(d, i) { return colours[i]; });
         },
         events: {
           enter: function() {
@@ -115,11 +121,22 @@
       var chart = this;
       // Cache data so we can use it to redraw later
       chart.data = data;
-      // Get the upper and lower limits for x, dx, and y in the data
-      var xExtent = d3.extent(data.map(function(d) { return d.x; })),
-          dxExtent = d3.extent(data.map(function(d) { return d.dx; })),
-          xPadding = 0.05*Math.abs(xExtent[0] - dxExtent[1]),
-          yExtent = d3.extent(data, function(d) { return d.y; });
+      var xExtent = [],
+          dxExtent = [],
+          xPadding = [],
+          yExtent = [];
+      // Define functions outside loop to avoid redeclaration
+      var getX = function(d) { return d.x; },
+          getDx = function(d) { return d.dx; },
+          getY = function(d) { return d.y; };
+      for (var num = 0; num < data.length; num++) {
+        var series = data[num].values;
+        // Get the upper and lower limits for x, dx, and y in the data
+        xExtent = d3.extent(series.map(getX).concat(xExtent));
+        dxExtent = d3.extent(series.map(getDx).concat(dxExtent));
+        xPadding = 0.05*Math.abs(xExtent[0] - dxExtent[1]);
+        yExtent = d3.extent(series.map(getY).concat(yExtent));
+      }
       // The domain is from the lower bound of the lowest bin to the higher
       // bound of the highest bin, with 5% padding either side
       chart.xScale.domain([xExtent[0] - xPadding, dxExtent[1] + xPadding]);

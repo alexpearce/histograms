@@ -67,8 +67,8 @@
 
       // Create axis and grid layers
       // TODO configurable tick numbers?
-      var xTicks = 5,
-          yTicks = 5;
+      var xTicks = 20,
+          yTicks = 20;
       chart.layers.xaxis = createAxis(chart.xScale, xTicks, 'bottom');
       chart.layers.xaxistop = createAxis(chart.xScale, xTicks, 'top')
         .tickFormat('');
@@ -161,16 +161,69 @@
       var chart = this;
 
       var dur = transition === true ? 250 : 0;
-      chart.areas.xaxis.transition().duration(dur)
-        .call(chart.layers.xaxis);
-      chart.areas.xaxistop.transition().duration(dur)
-        .call(chart.layers.xaxistop);
+      var transitionAxis = function(axisg) {
+        var axis,
+            scale,
+            majorText = String,
+            minorText = '',
+            majorX2 = 0,
+            minorX2 = 0,
+            majorY2 = 0,
+            minorY2 = 0;
+        if (axisg === chart.areas.xaxis) {
+          axis = chart.layers.xaxis;
+          scale = chart.xScale;
+          majorY2 = axis.innerTickSize();
+          majorX2 = 0;
+        } else if (axisg === chart.areas.xaxistop) {
+          axis = chart.layers.xaxistop;
+          scale = chart.xScale;
+          majorY2 = -axis.innerTickSize();
+          majorText = '';
+        } else if (axisg === chart.areas.yaxis) {
+          axis = chart.layers.yaxis;
+          scale = chart.yScale;
+          majorX2 = 6;
+          majorY2 = 0;
+        } else if (axisg === chart.areas.yaxisright) {
+          axis = chart.layers.yaxisright;
+          scale = chart.yScale;
+          majorX2 = -6;
+          majorY2 = 0;
+          majorText = '';
+        }
+        minorY2 = majorY2/2;
+        minorX2 = majorX2/2;
+        var transition = axisg.transition().duration(dur)
+          .call(axis)
+          .each('start', function() {
+            axisg.selectAll('text').text('');
+          })
+          .each('end', function() {
+            axisg.selectAll('text').text(String);
+            var join = axisg.selectAll('.tick')
+              .data(scale.ticks(5), function(d) { return d; });
+            join.classed('minor', false);
+            join.select('line')
+              .attr('x2', majorX2)
+              .attr('y2', majorY2);
+            join.select('text')
+              .text(majorText);
+            var exit = join.exit().classed('minor', true);
+            exit.select('text')
+              .text(minorText);
+            exit.select('line')
+              .attr('x2', minorX2)
+              .attr('y2', minorY2);
+          });
+      };
+
+      transitionAxis(chart.areas.xaxis);
+      transitionAxis(chart.areas.xaxistop);
+      transitionAxis(chart.areas.yaxis);
+      transitionAxis(chart.areas.yaxisright);
       chart.areas.xgrid.transition().duration(dur)
         .call(chart.layers.xgrid);
-      chart.areas.yaxis.transition().duration(dur)
-        .call(chart.layers.yaxis);
-      chart.areas.yaxisright.transition().duration(dur)
-        .call(chart.layers.yaxisright);
       chart.areas.ygrid.transition().duration(dur)
         .call(chart.layers.ygrid);
     },

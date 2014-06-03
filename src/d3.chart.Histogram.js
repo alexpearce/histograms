@@ -17,6 +17,10 @@
       // Then the data points
       // chart.layers.points = innerG.append('g')
       //   .classed('points', true);
+      // Then the legend above everything
+      chart.layers.legend = innerG.append('g')
+        .attr('transform', 'translate(' + (chart.width() - 100) + ', ' + (chart.margins.top + 15) +')')
+        .classed('legend', true);
 
       // Create line area shape for use in the layer
       var linearea = d3.svg.area()
@@ -24,6 +28,12 @@
         .x(function(d) { return chart.xScale(d.dx); })
         .y1(function(d) { return chart.yScale(d.y); })
         .y0(function(d) { return d3.max(chart.yScale.range()); });
+
+
+      chart.on('change:width', function() {
+        chart.layers.legend
+          .attr('transform', 'translate(' + (chart.width() - 100) + ', ' + (chart.margins.top + 15) +')');
+      });
 
       chart.layer('line', chart.layers.line, {
         dataBind: function(data) {
@@ -52,6 +62,30 @@
           'update:transition': function() {
             return this.attr('d', linearea);
           }
+        }
+      });
+
+      chart.layer('legend', chart.layers.legend, {
+        dataBind: function(data) {
+          return this.selectAll('g').data(data);
+        },
+        insert: function() {
+          return this.append('g');
+        },
+        events: {
+          enter: function() {
+            var colours = chart.data.map(function(d) { return d.colour || 'rgb(38, 17, 150)'; });
+            this.attr('transform', function(d, i) { return 'translate(0, ' + i*20 + ')'; });
+            this.append('path')
+              .classed('line', true)
+              .attr('stroke', function(d, i) { return colours[i]; })
+              .attr('d', 'M0 -6 h10');
+            this.append('text')
+              .attr('dx', 20)
+              // .text(function(d) { return ''; });
+              .text(function(d) { return d.title; });
+            return this;
+          },
         }
       });
 

@@ -96,8 +96,7 @@
         // Calculate the [minimum, maximum] tick values,
         // then the base-10 exponent for these min/max values
         // Use the biggest exponent as the one we show
-        var oldTicks = ticks,
-            extent = d3.extent(oldTicks),
+        var extent = d3.extent(ticks),
             minExponent = exponent(extent[0]),
             maxExponent = exponent(extent[1]),
             exp = d3.max([maxExponent, minExponent]);
@@ -164,7 +163,7 @@
       var transitionAxis = function(axisg) {
         var axis,
             scale,
-            majorText = String,
+            majorText,
             minorText = '',
             majorX2 = 0,
             minorX2 = 0,
@@ -175,6 +174,7 @@
           scale = chart.xScale;
           majorY2 = axis.innerTickSize();
           majorX2 = 0;
+          majorText = axis.tickFormat();
         } else if (axisg === chart.areas.xaxistop) {
           axis = chart.layers.xaxistop;
           scale = chart.xScale;
@@ -185,6 +185,7 @@
           scale = chart.yScale;
           majorX2 = 6;
           majorY2 = 0;
+          majorText = axis.tickFormat();
         } else if (axisg === chart.areas.yaxisright) {
           axis = chart.layers.yaxisright;
           scale = chart.yScale;

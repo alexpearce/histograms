@@ -15,8 +15,9 @@
       // Applying the clipping path to the chart area
       chart.layers.line.attr('clip-path', 'url(#chartArea)');
 
-      var updateScaleDomain = function(newDomain) {
-        chart.xScale.domain(newDomain);
+      var updateScaleDomain = function(newXDomain, newYDomain) {
+        chart.xScale.domain(newXDomain);
+        chart.yScale.domain(newYDomain);
         chart.drawAxes(true);
         chart.layers.line.draw(chart.data);
       };
@@ -28,6 +29,7 @@
       // Brushes for zooming
       var brush = d3.svg.brush()
         .x(chart.xScale)
+        .y(chart.yScale)
         .on('brushend', function() {
           // On ending a brush stroke:
           // 0. Do nothing if the selection's empty
@@ -39,6 +41,7 @@
           if (clearButton.empty() === true) {
             // Cache the original domain so we restore to later
             chart.xScale.originalDomain = chart.xScale.domain();
+            chart.yScale.originalDomain = chart.yScale.domain();
             // Create a group to hold rectangle and text
             var clearG = chart.base.append('g')
               .classed('clear-button', true)
@@ -61,12 +64,15 @@
             clearG.on('click', function() {
                 chart.base.select('.brush').call(brush.clear());
                 // Restore to the origin, cached domain
-                updateScaleDomain(chart.xScale.originalDomain);
+                updateScaleDomain(chart.xScale.originalDomain, chart.yScale.originalDomain);
                 clearG.remove();
               });
           }
           // 2. Update the x-axis domain
-          updateScaleDomain(brush.extent());
+          var brushExtent = brush.extent(),
+              xExtent = [brushExtent[0][0], brushExtent[1][0]],
+              yExtent = [brushExtent[0][1], brushExtent[1][1]];
+          updateScaleDomain(xExtent, yExtent);
           // 3. Clear the brush's extent
           chart.base.select('.brush').call(brush.clear());
         });

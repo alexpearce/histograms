@@ -34,14 +34,17 @@
 
   // Define our datasets
   var gaussian = {
-      colour: 'red',
-      values: formatData(gaussianData)
+    title: 'Gaussian',
+    colour: 'red',
+    values: formatData(gaussianData)
   };
   var landau = {
+    title: 'Landau',
     colour: 'green',
     values: formatData(landauData)
   };
   var steps = {
+    title: 'Steps',
     colour: 'blue',
     values: formatData({
         'values': [0, 10, 20, 30, 40, 50],

@@ -3,10 +3,6 @@ body {
   padding-left: 10px;
   color: #222;
 }
-/* SVG box */
-#histogram svg {
-  border: 1px solid #e0e0e0;
-}
 /* Histogram line areas */
 .line {
   shape-rendering: crispEdges;
@@ -21,7 +17,7 @@ body {
   stroke: #000;
 }
 /* Axes */
-path.domain {
+.axis path {
   fill: none;
   stroke: #000;
   stroke-width: 1px;
@@ -31,9 +27,6 @@ path.domain {
   stroke: #000;
   stroke-width: 1px;
   shape-rendering: crispEdges;
-}
-.axis text {
-  fill: #222;
 }
 .grid {
   fill: none;
@@ -68,11 +61,6 @@ path.domain {
 }
 .clear-button:active rect {
   fill: #ddd;
-}
-
-/* 2D histograms */
-.Histogram2D .grid line {
-  stroke: none;
 }
 
 .legend-box {

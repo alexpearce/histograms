@@ -8,11 +8,11 @@ module.exports = function(grunt) {
       },
       dist: {
         src: [
+          'src/d3.chart.utilities.js',
           'src/d3.chart.BaseChart.js',
           'src/d3.chart.AxesChart.js',
-          'src/d3.chart.Histogram.js',
-          'src/d3.chart.Histogram2D.js',
-          'src/d3.chart.HistogramZoom.js'
+          'src/d3.plotable.Histogram.js',
+          'src/d3.plotable.Histogram2D.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
       }

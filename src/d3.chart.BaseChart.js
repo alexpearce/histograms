@@ -1,24 +1,19 @@
 /*
  * BaseChart defines a chart others can extend.
  *   d3.chart('BaseChart').extend('MyChart', { ... });
- * It provides width and height setters and getters, and innerWidth and
- * innerHeight getters.
- * The width and height properties are those of the SVG 'pad', whilst the
- * innerWidth and innerHeight properties are the width and height of the
- * 'plot' itself.
+ * It provides setters and getters for the width and height.
  */
 (function(d3, undefined) {
   'use strict';
   d3.chart('BaseChart', {
     initialize: function() {
       var chart = this;
-      chart.base.classed('BaseChart', true);
 
       chart.margins = {
         top: 10,
         bottom: 40,
         left: 60,
-        right: 10,
+        right: 100,
         padding: 10
       };
 

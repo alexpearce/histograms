@@ -14,10 +14,10 @@
     for (var i = 0; i < data['values'].length; i++) {
       var bins = data['binning'][i];
       rtn.push({
-        x: bins[0],
-        dx: bins[1],
+        xlow: bins[0],
+        xhigh: bins[1],
         y: data['values'][i],
-        xErr: data['uncertainties'][i]
+        yerr: data['uncertainties'][i]
       });
     }
     return rtn;

@@ -1,3 +1,66 @@
+/*
+ * d3.chart.AxesChart
+ *
+ * d3.chart which draws a set of axes and contained plotables.
+ *
+ * AxesChart derives from BaseChart, inheriting all of its properties.
+ *
+ * Properties
+ * ----------
+ *
+ * Properties considered public are:
+ *
+ * * `xScale`: The d3.scale of the x axis
+ * * `yScale`: The d3.scale of the y axis
+ * * `zScale`: The d3.scale of the z axis
+ * * `xAxisLabel`: Getter/setter method for the x-axis label
+ * * `yAxisLabel`: Getter/setter method for the y-axis label
+ *
+ * Axes
+ * ----
+ *
+ * AxesChart is responsible for drawing axes and their containing d3.plotables.
+ * The x and y axes are drawn as two axes and a grid. The x axis is drawn
+ * below and above the plot area, and the y axis is drawn left and right.
+ * Only the x axis on the bottom and y axis on the left are given labels, but
+ * all axes and given tick markings.
+ * Both axes are formatted in SI notation, meaning that if the tick numbers
+ * are large enough to warrant an exponent, the exponent is rounded to the
+ * nearest multiple of three (e.g. 10^3, 10^-9).
+ * A z axis, if required, is drawn to the right of the plot area.
+ *
+ * Plotables
+ * ---------
+ *
+ * A plotable is an object in d3.plotable.
+ * Each plotable defines an object that can be drawn within a set of axes, such
+ * as a histogram, a function, or a scatter plot.
+ * Each plotable is responsible for drawing itself and reporting several of its
+ * properties, and so must define the following properties:
+ *
+ * * `name`: Property holding the name of the plotable, which must be unique
+ *           within an AxesChart instance, as stored plotables are referenced
+ *           by their name
+ * * `xDomain`: Method returning the extent the the plotable along the x axis
+ * * `yDomain`: Method returning the extent of the plotable along the y axis
+ * * `draw`: Method which draws the histogram, accepting the AxesChart instance
+ *           calling the method, the <g> container within which the plotable
+ *           should draw itself, and a boolean stating whether the plotable
+ *           should animate its drawing or not
+ *
+ * Thus, a complete but boring d3.plotables implementation might look like:
+ *
+ *   d3.plotables.MyPlotable = {
+ *     name: 'MyPlotable',
+ *     xDomain: function() { return [0, 0]; },
+ *     yDomain: function() { return [0, 0]; },
+ *     draw: function(axes, g, transition) { return; }
+ *   };
+ *
+ * Plotables are added to AxesChart using the `addPlotable` method, and are
+ * removed with `removePlotable`.
+ *
+ */
 (function(d3, undefined) {
   'use strict';
   d3.chart('BaseChart').extend('AxesChart', {
@@ -68,8 +131,8 @@
         .classed('y axis', true)
         .attr('transform', 'translate(' + chart.width() + ', 0)');
       // Z color scale, drawn outside the chart bounding box
-      chart.areas.legend = chart.base.append('g')
-        .classed('legend', true)
+      chart.areas.zscale = chart.base.append('g')
+        .classed('zscale', true)
         .attr('transform', 'translate(' + (chart.width() + chart.margins.left + 10) + ',' + chart.margins.top + ')');
 
       // Create <g> elements for axis labels and add the <text> elements to them
@@ -129,11 +192,14 @@
         chart.yScale.domain(newYDomain);
         chart.draw(true);
       };
+
+      // Define 'Clear zoom' button dimensions
       var buttonWidth = 100,
           buttonHeight = 40,
-          padding = 10;
-      // Brushes for zooming
-      var brush = d3.svg.brush()
+          padding = 10,
+          brush = d3.svg.brush();
+      // Set up zooming behaviour in x and y using d3.svg.brush
+      brush
         .x(chart.xScale)
         .y(chart.yScale)
         .on('brushend', function() {
@@ -197,7 +263,7 @@
         chart.areas.yaxisright.attr('transform', 'translate(' + chart.width() + ', 0)');
         chart.layers.ygrid.tickSize(-chart.width(), 0, 0);
         clipRect.attr('width', chart.width());
-        chart.areas.legend
+        chart.areas.zscale
           .attr('transform', 'translate(' + (chart.width() + chart.margins.left + 10) + ',' + chart.margins.top + ')');
         chart.draw();
       });
@@ -216,15 +282,18 @@
       });
 
       // Away we go!
-      this.draw();
+      chart.draw();
     },
-    // Draw the chart.
-    //
-    // Owners of the chart object should not need to call this method directly.
-    // It is invoked when the internal state of the chart would produce a
-    // visual change.
-    //
-    // Returns the chart.
+
+    /*
+     * Draw the chart.
+     *
+     * Owners of the chart object should not need to call this method directly.
+     * It is invoked when the internal state of the chart would produce a
+     * visual change.
+     *
+     * Returns the chart.
+     */
     draw: function(transition) {
       if (transition === undefined) {
           transition = false;
@@ -250,7 +319,7 @@
           plotable;
       for (name in chart._plotables) {
         plotable = chart._plotables[name];
-        plotable.draw(this._layers[name], transition);
+        plotable.draw(chart, chart._layers[name], transition);
         // If any plotable defines a z domain, draw the z-axis
         if (plotable.zDomain !== undefined) {
           chart.drawColorScale();
@@ -259,106 +328,120 @@
 
       return chart;
     },
-    // Get or set the x-axis label.
-    //
-    // If no argument is given, the x-axis label is returned.
-    // If a string is given, the x-axis label is set to this string and the
-    // axis is redrawn.
-    // The exponent of the axis domain, if non-zero, is appended to the label.
-    //
-    // Returns the x-axis label if no argument is given, else the chart.
+
+    /* Get or set the x-axis label.
+     *
+     * If no argument is given, the x-axis label is returned.
+     * If a string is given, the x-axis label is set to this string and the
+     * axis is redrawn.
+     * The exponent of the axis domain, if non-zero, is appended to the label.
+     *
+     * Returns the x-axis label if no argument is given, else the chart.
+     */
     xAxisLabel: function(newLabel) {
+      var chart = this;
       if (arguments.length === 0) {
-        return this._xAxisLabel;
+        return chart._xAxisLabel;
       }
-      this._xAxisLabel = newLabel;
+      chart._xAxisLabel = newLabel;
       // Append the value of the exponent, if there is one
-      if (this._xExponent !== 0) {
-        this.areas.xlabel.select('text')
-          .text(this.xAxisLabel() + ' ×1e' + this._xExponent);
+      if (chart._xExponent !== 0) {
+        chart.areas.xlabel.select('text')
+          .text(chart.xAxisLabel() + ' ×1e' + chart._xExponent);
       } else {
-        this.areas.xlabel.select('text')
-          .text(this.xAxisLabel());
+        chart.areas.xlabel.select('text')
+          .text(chart.xAxisLabel());
       }
-      return this;
+      return chart;
     },
-    // Get or set the y-axis label.
-    //
-    // If no argument is given, the y-axis label is returned.
-    // If a string is given, the y-axis label is set to this string and the
-    // axis is redrawn.
-    // The exponent of the axis domain, if non-zero, is appended to the label.
-    //
-    // Returns the y-axis label if no argument is given, else the chart.
+
+    /* Get or set the y-axis label.
+     *
+     * If no argument is given, the y-axis label is returned.
+     * If a string is given, the y-axis label is set to this string and the
+     * axis is redrawn.
+     * The exponent of the axis domain, if non-zero, is appended to the label.
+     *
+     * Returns the y-axis label if no argument is given, else the chart.
+     */
     yAxisLabel: function(newLabel) {
+      var chart = this;
       if (arguments.length === 0) {
-        return this._yAxisLabel;
+        return chart._yAxisLabel;
       }
-      this._yAxisLabel = newLabel;
+      chart._yAxisLabel = newLabel;
       // Append the value of the exponent, if there is one
-      if (this._yExponent !== 0) {
-        this.areas.ylabel.select('text')
-          .text(this.yAxisLabel() + ' ×1e' + this._yExponent);
+      if (chart._yExponent !== 0) {
+        chart.areas.ylabel.select('text')
+          .text(chart.yAxisLabel() + ' ×1e' + chart._yExponent);
       } else {
-        this.areas.ylabel.select('text')
-          .text(this.yAxisLabel());
+        chart.areas.ylabel.select('text')
+          .text(chart.yAxisLabel());
       }
-      return this;
+      return chart;
     },
-    // Returns the list of plotable objects belonging to the chart.
+
+    /* Returns the list of plotable objects belonging to the chart.
+     */
     plotables: function() {
       return this._plotables;
     },
-    // Add a plotable to the chart.
-    //
-    // The axes and domains of the chart are recomputed and the chart redrawn.
-    //
-    // plotable - d3.plotable object to add.
-    //
-    // Returns the chart.
+
+    /* Add a plotable to the chart.
+     *
+     * The axes and domains of the chart are recomputed and the chart redrawn.
+     *
+     * plotable - d3.plotable object to add.
+     *
+     * Returns the chart.
+     */
     addPlotable: function(plotable) {
-      // Check the plotable object has the necessary properties
-      var requiredProps = ['draw', 'name', 'axes', 'xDomain', 'yDomain'],
+      var chart = this,
+          // Check the plotable object has the necessary properties
+          requiredProps = ['draw', 'name', 'xDomain', 'yDomain'],
           plotableOK = requiredProps.every(function(prop) {
-        return plotable[prop] !== undefined;
-      });
+            return plotable[prop] !== undefined;
+          });
       if (!plotableOK) {
         return;
       }
       // Add the axes to the plotable
-      plotable.axes(this);
-      this._plotables[plotable.name] = plotable;
-      this._layers[plotable.name] = this.base.select('g')
+      chart._plotables[plotable.name] = plotable;
+      chart._layers[plotable.name] = chart.base.select('g')
         .insert('g', '.axis')
         .classed(plotable.name, true)
         // Applying the clipping path to the chart area
-        .attr('clip-path', 'url(#' + this.clipPath.attr('id') + ')');
-      this.setDomain();
-      this.draw();
-      return this;
+        .attr('clip-path', 'url(#' + chart.clipPath.attr('id') + ')');
+      chart.setDomain();
+      chart.draw();
+      return chart;
     },
-    // Remove the plotable with `name` property equal to `plotableName` from
-    // the chart.
-    //
-    // plotableName - Name of the plotable to remove from the chart.
-    //
-    // Returns the chart.
+
+    /* Remove the plotable with `name` property equal to `plotableName` from
+     * the chart.
+     *
+     * plotableName - Name of the plotable to remove from the chart.
+     *
+     * Returns the chart.
+     */
     removePlotable: function(plotableName) {
       var chart = this;
-      this._layers[plotableName].remove();
-      delete this._plotables[plotableName];
-      delete this._layers[plotableName];
-      this.setDomain();
-      this.draw();
-      return this;
+      chart._layers[plotableName].remove();
+      delete chart._plotables[plotableName];
+      delete chart._layers[plotableName];
+      chart.setDomain();
+      chart.draw();
+      return chart;
     },
-    // Set the domain of the x, y, and z scales.
-    //
-    // Loop through each plotable calling their respective `{x,y,z}Domain`
-    // methods, then set the chart's domain to the minimum and maximum values
-    // found.
-    //
-    // Returns the chart.
+
+    /* Set the domain of the x, y, and z scales.
+     *
+     * Loop through each plotable calling their respective `{x,y,z}Domain`
+     * methods, then set the chart's domain to the minimum and maximum values
+     * found.
+     *
+     * Returns the chart.
+     */
     setDomain: function() {
       var name,
           plotable,
@@ -373,7 +456,7 @@
         if (plotable.zDomain !== undefined) {
           zDomain = d3.extent(plotable.zDomain().concat(zDomain));
         }
-        plotable.draw(this._layers[name]);
+        plotable.draw(chart, chart._layers[name]);
       }
       xDomain = xDomain.length === 0 ? [0, 1] : xDomain;
       yDomain = yDomain.length === 0 ? [0, 1] : yDomain;
@@ -382,6 +465,11 @@
       chart.yScale.domain(yDomain);
       chart.zScale.domain([zDomain[0], zDomain[1]/2, zDomain[1]]);
     },
+
+    /* Draw the z scale.
+     *
+     * Returns the chart.
+     */
     drawColorScale: function() {
       // TODO configurable cellWidth, tick number?
       var chart = this,
@@ -389,21 +477,21 @@
           tickDiff = Math.abs(ticks[0] - ticks[1]),
           cellWidth = 25,
           cellHeight = chart.height()/ticks.length,
-          legendItem = chart.areas.legend.selectAll('.legend-item')
+          zscaleItem = chart.areas.zscale.selectAll('.zscale-item')
             .data(ticks)
             .enter()
               .append('g')
-              .attr('class', 'legend-item')
+              .attr('class', 'zscale-item')
               .attr('transform', function(d, i) { return 'translate(0, ' + (i*cellHeight) + ')'; });
 
       // Draw colour cells
-      legendItem.append('rect')
+      zscaleItem.append('rect')
         .attr('width', cellWidth)
         .attr('height', cellHeight)
         .style('fill', chart.zScale);
 
       // Draw tick label centered within and offset from the cell
-      legendItem.append('text')
+      zscaleItem.append('text')
         .attr('x', cellWidth + 5)
         .attr('y', (cellHeight)/2)
         .attr('dy', '.35em')
@@ -411,10 +499,10 @@
 
       // Draw bounding box around colour scale
       // We don't normally assume styles, but a fill certainly isn't desirable
-      chart.areas.legend.append('rect')
+      chart.areas.zscale.append('rect')
         .attr('width', cellWidth)
         .attr('height', cellHeight*ticks.length)
-        .classed('legend-box', true)
+        .classed('zscale-box', true)
         .style('fill', 'none');
     }
   });

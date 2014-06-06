@@ -1,6 +1,6 @@
 (function(window, d3, undefined) {
   var utilities = {
-    // Return the base-10 exponent of the absolute value of x
+    // Compute the base-10 exponent of the absolute value of x.
     //
     // If you wrote the argument in scientific notation, this will return the
     // exponent.
@@ -11,15 +11,22 @@
     //   exponent(123000)
     //   // returns 5
     //
-    // x - Floating point number to evaluate the exponent of
+    // x - Floating point number to evaluate the exponent of.
+    //
+    // Returns the base-10 exponent for x.
     exponent: function(x) {
       return Math.floor(Math.log(Math.abs(x))/Math.LN10);
     },
 
-    // Return the multiple-of-three exponent for the array of tick values
-    // The exponent returned is the maximum exponent within the ticks,
-    // rounded down to the nearest multiple of three
-    // This is more familiar, matching SI prefixes (kilo 10^3, mega 10^6, etc.)
+    // Return the appropriate SI-prefix exponent for the array of tick values.
+    //
+    // The exponent is the maximum exponent within the ticks, rounded down to
+    // the nearest multiple of three.
+    // This is more familiar, matching SI prefixes (kilo 10^3, mega 10^6, etc.).
+    //
+    // ticks - Array of tick values.
+    //
+    // Returns the exponent.
     ticksExponent: function(ticks) {
       // Calculate the [minimum, maximum] tick values,
       // then the base-10 exponent for these min/max values
@@ -32,12 +39,22 @@
       return 3*Math.floor(exp/3);
     },
 
-    // Return a function which accepts a value and tick number,
-    // itself returning an appropriately rounded value
-    // A nice precision is one fine enough such that adjacent ticks aren't rounded to be equal
+    // Create a tick formatter function for SI-prefix formatted tick labels.
+    //
+    // A nice precision is one fine enough such that adjacent ticks aren't
+    // rounded to be equal.
     // For example, two adajacent ticks with values (0.998, 0.999) require
     // three digits of precision, whereas (12.5, 23.5) requires zero
-    // This method assumes all ticks are spaced equally apart
+    // This method assumes all ticks are spaced equally apart.
+    //
+    // scale - d3.scale to generate ticks.
+    // axis - d3.svg.axis which defines the number of ticks.
+    // callback - Optional function to be invoked whenever the tick formatter
+    //            is. The function is passed the exponent used to format
+    //            the tick labels.
+    //
+    // Returns a  tick formatter function which accepts a value and a tick
+    // number, itself return an appropriately round tick label.
     siTickFormatter: function(scale, axis, callback) {
       // By placing this logic inside the returned function, the values
       // are updated on each call
@@ -55,5 +72,7 @@
       };
     }
   };
+
+  // Expose our utilities in the d3 object
   d3.chart.utilities = utilities;
 })(window, window.d3);

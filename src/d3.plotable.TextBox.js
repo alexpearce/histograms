@@ -38,10 +38,10 @@
       config.color = '#000000';
     }
     if (config.x === undefined) {
-      config.x = 10;
+      config.x = 70;
     }
     if (config.y === undefined) {
-      config.y = 10;
+      config.y = 20;
     }
     return {
       name: name,

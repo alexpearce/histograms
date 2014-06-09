@@ -529,6 +529,8 @@
 
     /* Draw the z scale.
      *
+     * Adds 70 pixels to the right margin to make room for the scale.
+     *
      * Returns the chart.
      */
     drawColorScale: function() {
@@ -544,6 +546,14 @@
               .append('g')
               .attr('class', 'zscale-item')
               .attr('transform', function(d, i) { return 'translate(0, ' + (i*cellHeight) + ')'; });
+
+      // Add 70px to the right-side margin to make room for the scale
+      // We don't want to add the margin multiple times, so check/create a flag
+      if (chart._hasZScale !== true) {
+        chart.margins.right += 70;
+        chart.updateContainerWidth();
+        chart._hasZScale = true;
+      }
 
       // Draw colour cells
       zscaleItem.append('rect')

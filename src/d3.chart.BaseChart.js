@@ -28,7 +28,7 @@
         top: 10,
         bottom: 40,
         left: 60,
-        right: 100,
+        right: 10,
         padding: 10
       };
 

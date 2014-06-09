@@ -60,6 +60,21 @@
  * Plotables are added to AxesChart using the `addPlotable` method, and are
  * removed with `removePlotable`.
  *
+ * Ornaments
+ * ---------
+ *
+ * An ornament object can be identical to a plotable object, but is treated
+ * slightly differently by AxesChart, namely they should not depend on the
+ * scales of the axes, and so they:
+ *
+ * * Are not redrawn on scale changes, but are drawn once on
+ *   `AxesChart.addOrnament`
+ * * Do not have a clipping path applied to them
+ * * Are drawn above all plotables, axes, ticks, labels, etc.
+ *
+ * Ornaments must implement the `name` and `draw` methods, as for plotables,
+ * but are not required to implement the `xDomain` and `yDomain` methods.
+ *
  */
 (function(d3, undefined) {
   'use strict';
@@ -87,6 +102,9 @@
       // Object of plotable objects
       // Each plotable is referenced by a key equal to its `name` property
       chart._plotables = {};
+      // Object of ornament objects
+      // Each ornament is referenced by a key equal to its `name` property
+      chart._ornaments = {};
       // Object of plotable layers
       // Each plotable is drawn in its own "layer", a <g> element, referenced
       // by a key equal to the `name` property of the plotable
@@ -401,7 +419,6 @@
       if (!plotableOK) {
         return;
       }
-      // Add the axes to the plotable
       chart._plotables[plotable.name] = plotable;
       chart._layers[plotable.name] = chart.base.select('g')
         .insert('g', '.axis')
@@ -427,6 +444,54 @@
       delete chart._layers[plotableName];
       chart.setDomain();
       chart.draw();
+      return chart;
+    },
+
+    /* Returns the list of plotable objects registered as ornaments belonging
+     * to the chart
+     */
+    ornaments: function() {
+      return this._ornaments;
+    },
+
+    /* Add a ornament to the chart.
+     *
+     * As ornaments do not depend on the scale, the domains are not recomputed
+     * and the chart and other plotables are not redrawn.
+     *
+     * ornament - d3.plotable object to add as an ornament.
+     *
+     * Returns the chart.
+     */
+    addOrnament: function(ornament) {
+      var chart = this,
+          // Check the ornament object has the necessary properties
+          requiredProps = ['draw', 'name'],
+          ornamentOK = requiredProps.every(function(prop) {
+            return ornament[prop] !== undefined;
+          });
+      if (!ornamentOK) {
+        return;
+      }
+      chart._ornaments[ornament.name] = ornament;
+      chart._layers[ornament.name] = chart.base.append('g')
+        .classed(ornament.name, true);
+      ornament.draw(chart, chart._layers[ornament.name]);
+      return chart;
+    },
+
+    /* Remove the ornament with `name` property equal to `ornamentName` from
+     * the chart.
+     *
+     * ornamentName - Name of the ornament to remove from the chart.
+     *
+     * Returns the chart.
+     */
+    removeOrnament: function(ornamentName) {
+      var chart = this;
+      chart._layers[ornamentName].remove();
+      delete chart._ornaments[ornamentName];
+      delete chart._layers[ornamentName];
       return chart;
     },
 

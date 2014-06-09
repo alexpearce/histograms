@@ -198,63 +198,62 @@
           buttonHeight = 40,
           padding = 10,
           brush = d3.svg.brush();
+      var brushend = function() {
+        // On ending a brush stroke:
+        // 0. Do nothing if the selection's empty
+        if (brush.empty() === true) {
+          return;
+        }
+        // 1. Add a 'clear zoom' button if it doesn't exist
+        var clearButton = chart.base.select('.clear-button');
+        if (clearButton.empty() === true) {
+          // Cache the original domain so we restore to later
+          chart.xScale.originalDomain = chart.xScale.domain();
+          chart.yScale.originalDomain = chart.yScale.domain();
+          // Create a group to hold rectangle and text
+          var clearG = chart.base.append('g')
+            .classed('clear-button', true)
+            .attr('transform', 'translate(' +
+                (chart.width() + chart.margins.left - buttonWidth - padding) + ',' +
+                (chart.margins.top + padding) + ')'
+            );
+          // Add the rounded rectangle to act as a background
+          clearG.append('rect')
+            .attr('width', buttonWidth)
+            .attr('height', buttonHeight)
+            .attr('rx', 2)
+            .attr('ry', 2);
+          // Add the text
+          clearG.append('text')
+            .attr('x', 10)
+            .attr('y', 25)
+            .text('Clear zoom');
+          // When the group is clicked, undo the zoom and remove the button
+          clearG.on('click', function() {
+              chart.base.select('.brush').call(brush.clear());
+              // Restore to the origin, cached domain
+              updateScaleDomain(chart.xScale.originalDomain, chart.yScale.originalDomain);
+              clearG.remove();
+            });
+        }
+        // 2. Update the x-axis domain
+        var brushExtent = brush.extent(),
+            xExtent = [brushExtent[0][0], brushExtent[1][0]],
+            yExtent = [brushExtent[0][1], brushExtent[1][1]];
+        updateScaleDomain(xExtent, yExtent);
+        // 3. Clear the brush's extent
+        chart.base.select('.brush').call(brush.clear());
+      };
       // Set up zooming behaviour in x and y using d3.svg.brush
       brush
         .x(chart.xScale)
         .y(chart.yScale)
-        .on('brushend', function() {
-          // On ending a brush stroke:
-          // 0. Do nothing if the selection's empty
-          if (brush.empty() === true) {
-            return;
-          }
-          // 1. Add a 'clear zoom' button if it doesn't exist
-          var clearButton = chart.base.select('.clear-button');
-          if (clearButton.empty() === true) {
-            // Cache the original domain so we restore to later
-            chart.xScale.originalDomain = chart.xScale.domain();
-            chart.yScale.originalDomain = chart.yScale.domain();
-            // Create a group to hold rectangle and text
-            var clearG = chart.base.append('g')
-              .classed('clear-button', true)
-              .attr('transform', 'translate(' +
-                  (chart.width() + chart.margins.left - buttonWidth - padding) + ',' +
-                  (chart.margins.top + padding) + ')'
-              );
-            // Add the rounded rectangle to act as a background
-            clearG.append('rect')
-              .attr('width', buttonWidth)
-              .attr('height', buttonHeight)
-              .attr('rx', 2)
-              .attr('ry', 2);
-            // Add the text
-            clearG.append('text')
-              .attr('x', 10)
-              .attr('y', 25)
-              .text('Clear zoom');
-            // When the group is clicked, undo the zoom and remove the button
-            clearG.on('click', function() {
-                chart.base.select('.brush').call(brush.clear());
-                // Restore to the origin, cached domain
-                updateScaleDomain(chart.xScale.originalDomain, chart.yScale.originalDomain);
-                clearG.remove();
-              });
-          }
-          // 2. Update the x-axis domain
-          var brushExtent = brush.extent(),
-              xExtent = [brushExtent[0][0], brushExtent[1][0]],
-              yExtent = [brushExtent[0][1], brushExtent[1][1]];
-          updateScaleDomain(xExtent, yExtent);
-          // 3. Clear the brush's extent
-          chart.base.select('.brush').call(brush.clear());
-        });
+        .on('brushend', brushend);
       // Add the brush to the canvas
       chart.areas.brush = chart.base.append('g')
         .classed('brush', true)
         .attr('transform', 'translate(' + chart.margins.left + ', ' + chart.margins.top + ')');
-      chart.areas.brush.call(brush)
-        .selectAll('rect')
-        .attr('height', chart.height());
+      chart.areas.brush.call(brush);
 
       // Update width/height dependent elements on change
       chart.on('change:width', function() {
@@ -274,10 +273,7 @@
         chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
         chart.layers.xgrid.tickSize(-chart.height(), 0, 0);
         clipRect.attr('height', chart.height());
-        chart.areas.brush
-          .call(brush)
-          .selectAll('rect')
-          .attr('height', chart.height());
+        chart.areas.brush.call(brush);
         chart.draw();
       });
 

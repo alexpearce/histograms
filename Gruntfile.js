@@ -11,6 +11,7 @@ module.exports = function(grunt) {
           'src/d3.chart.utilities.js',
           'src/d3.chart.BaseChart.js',
           'src/d3.chart.AxesChart.js',
+          'src/d3.plotable.TextBox.js',
           'src/d3.plotable.Histogram.js',
           'src/d3.plotable.Histogram2D.js'
         ],

@@ -36,6 +36,10 @@ body {
 .axis-label {
   font-size: 0.9em;
 }
+/* TextBox */
+.TextBox rect {
+  shape-rendering: crispEdges;
+}
 /* Brush, i.e. zoom box */
 .brush .extent {
   fill: #000;
@@ -63,7 +67,7 @@ body {
   fill: #ddd;
 }
 
-.legend-box {
+.zscale-box {
   stroke: #000;
   stroke-width: 1px;
   shape-rendering: crispEdges;

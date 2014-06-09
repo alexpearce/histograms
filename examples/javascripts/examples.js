@@ -40,9 +40,17 @@
       .xAxisLabel('x')
       .yAxisLabel('y');
 
+  var gaussianInfo = [
+    ['Name', 'Gaussian'],
+    ['Entries', '10000'],
+    ['Mean', '0.0'],
+    ['RMS', '1.0']
+  ];
+
   // Draw plotables on to charts
   hGauss.addPlotable(d3.plotable.Histogram('steps', steps));
   hGauss.addPlotable(d3.plotable.Histogram('gaussian', gaussian));
   hGauss.addPlotable(d3.plotable.Histogram('landau', landau));
+  hGauss.addOrnament(d3.plotable.TextBox('gaussianInfo', gaussianInfo));
   h2DGauss.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
 })(window, window.document);

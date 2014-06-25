@@ -1,18 +1,28 @@
 /*
- * BaseChart defines a chart others can extend.
- *   d3.chart('BaseChart').extend('MyChart', { ... });
- * It provides width and height setters and getters, and innerWidth and
- * innerHeight getters.
- * The width and height properties are those of the SVG 'pad', whilst the
- * innerWidth and innerHeight properties are the width and height of the
- * 'plot' itself.
+ * d3.chart.BaseChart
+ *
+ * d3.chart which provides a sane base to build other charts with.
+ * Allows derivatives to easily adhere to the D3 margin convention [1] using
+ * `width` and `height` methods.
+ *
+ * [1]: http://bl.ocks.org/mbostock/3019563
+ *
+ * Properties
+ * ----------
+ *
+ * Properties considered public are:
+ *
+ * * `margins`: Object defining `top`, `bottom`, `left`, and `right` margins in
+ *              pixels.
+ * * `width`: Getter/setter method for the chart width
+ * * `height`: Getter/setter method for the chart height
+ *
  */
 (function(d3, undefined) {
   'use strict';
   d3.chart('BaseChart', {
     initialize: function() {
       var chart = this;
-      chart.base.classed('BaseChart', true);
 
       chart.margins = {
         top: 10,
@@ -44,32 +54,52 @@
       chart.areas = {};
       chart.layers = {};
     },
-    // Chart width setter/getter
+
+    /* Chart width setter/getter.
+     *
+     * newWidth - Width to set the chart area in pixels.
+     *
+     * Returns the chart width if newWidth is undefined, else the chart.
+     */
     width: function(newWidth) {
+      var chart = this;
       if (arguments.length === 0) {
-        return this._width;
+        return chart._width;
       }
-      var oldWidth = this._width;
-      this._width = newWidth;
-      this.updateContainerWidth();
-      this.trigger('change:width', newWidth, oldWidth);
-      return this;
+      var oldWidth = chart._width;
+      chart._width = newWidth;
+      chart.updateContainerWidth();
+      chart.trigger('change:width', newWidth, oldWidth);
+      return chart;
     },
-    // Chart height setter/getter
+
+    /* Chart height setter/getter.
+     *
+     * newHeight - Height to set the chart area in pixels.
+     *
+     * Returns the chart height if newHeight is undefined, else the chart.
+     */
     height: function(newHeight) {
+      var chart = this;
       if (arguments.length === 0) {
-        return this._height;
+        return chart._height;
       }
-      var oldHeight = this._height;
-      this._height = newHeight;
-      this.updateContainerHeight();
-      this.trigger('change:height', newHeight, oldHeight);
-      return this;
+      var oldHeight = chart._height;
+      chart._height = newHeight;
+      chart.updateContainerHeight();
+      chart.trigger('change:height', newHeight, oldHeight);
+      return chart;
     },
+
+    /* Set the width of the chart's root SVG.
+     */
     updateContainerWidth: function() {
       this.base
         .attr('width', this._width + this.margins.left + this.margins.right);
     },
+
+    /* Set the height of the chart's root SVG.
+     */
     updateContainerHeight: function() {
       this.base
         .attr('height', this._height + this.margins.top + this.margins.bottom);

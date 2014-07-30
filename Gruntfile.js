@@ -25,8 +25,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-            'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>'],
-	    '../root-web-monitoring/webmonitor/static/javascripts/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+          'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
         }
       }
     },

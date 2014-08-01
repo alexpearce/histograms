@@ -12,9 +12,9 @@ body {
   fill: #000;
 }
 /* Error bars */
-.error {
+.uncertainty {
   stroke-width: 1px;
-  stroke: #000;
+  shape-rendering: crispEdges;
 }
 /* Axes */
 .axis path {

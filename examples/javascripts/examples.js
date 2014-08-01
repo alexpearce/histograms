@@ -29,7 +29,7 @@
       steps = formatData({
         'values': [0, 1, 2, 3, 4, 5],
         'binning': [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]],
-        'uncertainties': [0, 0, 0, 0, 0, 0]
+        'uncertainties': [[0, 0.2], [0.2, 0.7], [0.3, 0.2], [0.2, 0.2], [0.2, 0.3], [0.2, 0.6]]
       });
 
   // Define our charts
@@ -48,7 +48,7 @@
   ];
 
   // Draw plotables on to charts
-  hGauss.addPlotable(d3.plotable.Histogram('steps', steps));
+  hGauss.addPlotable(d3.plotable.Histogram('steps', steps, {showUncertainties: true}));
   hGauss.addPlotable(d3.plotable.Histogram('gaussian', gaussian));
   hGauss.addPlotable(d3.plotable.Histogram('landau', landau));
   hGauss.addOrnament(d3.plotable.TextBox('gaussianInfo', gaussianInfo));

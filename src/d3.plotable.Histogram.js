@@ -41,6 +41,17 @@
     if (config.yMinimum === undefined) {
       config.yMinimum = 0;
     }
+    if (config.showUncertainties === undefined) {
+      config.showUncertainties = false;
+    }
+    // Add zero'd uncertainties if none are present
+    for (var i = 0; i < data.length; i++) {
+      var datum = data[i];
+      if (!('yerr' in datum)) {
+        datum.yerr = [0, 0];
+      }
+      data[i] = datum;
+    }
     return {
       name: name,
       data: data,

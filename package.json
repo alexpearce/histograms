@@ -1,6 +1,6 @@
 {
   "name": "d3.chart.histograms",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Histogram drawing in D3.",
   "repository": {
     "type": "git",

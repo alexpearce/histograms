@@ -1,5 +1,7 @@
 ## [Master](https://github.com/alexpearce/histograms/tree/master)
 
+## [0.0.5](https://github.com/alexpearce/histograms/tree/v0.0.5)
+
 Features:
 
   - Histogram plotable can display asymmetric uncertainties with the `showUncertainties` configuration option.

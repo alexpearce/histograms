@@ -4,12 +4,11 @@ body {
   color: #222;
 }
 /* Histogram line areas */
-.line {
+.Histogram .line {
   shape-rendering: crispEdges;
 }
-/* Points */
-.point {
-  fill: #000;
+.LineChart .line {
+  stroke-width: 2px;
 }
 /* Error bars */
 .uncertainty {

@@ -1,5 +1,15 @@
 ## [Master](https://github.com/alexpearce/histograms/tree/master)
 
+## [0.0.6](https://github.com/alexpearce/histograms/tree/v0.0.6)
+
+Features:
+
+  - Transitions can be toggled by the user with `chart.animate()`.
+
+Bugfixes:
+
+  - Adding z colour scale now doesn't change the SVG element size.
+
 ## [0.0.5](https://github.com/alexpearce/histograms/tree/v0.0.5)
 
 Features:

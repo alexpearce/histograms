@@ -10,6 +10,10 @@ body {
 .LineChart .line {
   stroke-width: 2px;
 }
+/* 2D Histogram bins */
+.Histogram2D .tile {
+  shape-rendering: crispEdges;
+}
 /* Error bars */
 .uncertainty {
   stroke-width: 1px;

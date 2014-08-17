@@ -15,6 +15,7 @@
  * * `zScale`: The d3.scale of the z axis
  * * `xAxisLabel`: Getter/setter method for the x-axis label
  * * `yAxisLabel`: Getter/setter method for the y-axis label
+ * * `animate`: Getter/setter method for animation flag
  *
  * Axes
  * ----
@@ -87,6 +88,7 @@
       chart._yAxisLabel = '';
       chart._xExponent = 0;
       chart._yExponent = 0;
+      chart._animate = true;
 
       // Transform scales: go from data coordinates (domain) to canvas coordinates (range)
       chart.xScale = d3.scale.linear()
@@ -208,7 +210,7 @@
       var updateScaleDomain = function(newXDomain, newYDomain) {
         chart.xScale.domain(newXDomain);
         chart.yScale.domain(newYDomain);
-        chart.draw(true);
+        chart.draw();
       };
 
       // Define 'Clear zoom' button dimensions
@@ -274,29 +276,29 @@
       chart.areas.brush.call(brush);
 
       // Update width/height dependent elements on change
-      chart.on('change:width', function() {
-        chart.xScale.range([0, chart.width()]);
-        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
-        chart.areas.yaxisright.attr('transform', 'translate(' + chart.width() + ', 0)');
-        chart.layers.ygrid.tickSize(-chart.width(), 0, 0);
-        clipRect.attr('width', chart.width());
+      chart.on('change:width', function(width) {
+        chart.xScale.range([0, width]);
+        chart.areas.xlabel.attr('transform', 'translate(' + (width + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
+        chart.areas.yaxisright.attr('transform', 'translate(' + width + ', 0)');
+        chart.layers.ygrid.tickSize(-width, 0, 0);
+        clipRect.attr('width', width);
         chart.areas.zscale
-          .attr('transform', 'translate(' + (chart.width() + chart.margins.left + 10) + ',' + chart.margins.top + ')');
-        chart.draw();
+          .attr('transform', 'translate(' + (width + chart.margins.left + 10) + ',' + chart.margins.top + ')');
+        chart.draw(false);
       });
-      chart.on('change:height', function() {
-        chart.yScale.range([chart.height(), 0]);
-        chart.areas.xaxis.attr('transform', 'translate(0,' + chart.height() + ')');
-        chart.areas.xgrid.attr('transform', 'translate(0,' + chart.height() + ')');
-        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (chart.height() + chart.margins.top + chart.margins.bottom) + ')');
-        chart.layers.xgrid.tickSize(-chart.height(), 0, 0);
-        clipRect.attr('height', chart.height());
+      chart.on('change:height', function(height) {
+        chart.yScale.range([height, 0]);
+        chart.areas.xaxis.attr('transform', 'translate(0,' + height + ')');
+        chart.areas.xgrid.attr('transform', 'translate(0,' + height + ')');
+        chart.areas.xlabel.attr('transform', 'translate(' + (chart.width() + chart.margins.left) + ',' + (height + chart.margins.top + chart.margins.bottom) + ')');
+        chart.layers.xgrid.tickSize(-height, 0, 0);
+        clipRect.attr('height', height);
         chart.areas.brush.call(brush);
-        chart.draw();
+        chart.draw(false);
       });
 
       // Away we go!
-      chart.draw();
+      chart.draw(false);
     },
 
     /*
@@ -309,35 +311,59 @@
      * Returns the chart.
      */
     draw: function(transition) {
-      if (transition === undefined) {
-          transition = false;
-      }
       var chart = this;
-
-      var dur = transition === true ? 250 : 0;
-      chart.areas.xaxis.transition().duration(dur)
-        .call(chart.layers.xaxis);
-      chart.areas.xaxistop.transition().duration(dur)
-        .call(chart.layers.xaxistop);
-      chart.areas.xgrid.transition().duration(dur)
-        .call(chart.layers.xgrid);
-      chart.areas.yaxis.transition().duration(dur)
-        .call(chart.layers.yaxis);
-      chart.areas.yaxisright.transition().duration(dur)
-        .call(chart.layers.yaxisright);
-      chart.areas.ygrid.transition().duration(dur)
-        .call(chart.layers.ygrid);
+      if (transition === undefined) {
+        transition = chart.animate();
+      }
 
       // Draw the plotables, one per layer
       var name,
           plotable;
       for (name in chart._plotables) {
         plotable = chart._plotables[name];
-        plotable.draw(chart, chart._layers[name], transition);
         // If any plotable defines a z domain, draw the z-axis
         if (plotable.zDomain !== undefined) {
+          // Shrink the plot width by 70px to accommodate the colour scale
+          // Changing the width will call chart.draw, so we stop this draw call
+          // to prevent an infinite loop
+          if (chart._hasZScale !== true) {
+            chart._hasZScale = true;
+            chart.margins.right += 70;
+            chart.width(chart.width() - 70);
+            return chart;
+          }
           chart.drawColorScale();
         }
+        plotable.draw(chart, chart._layers[name], transition);
+      }
+
+      // Draw the axes, transitioning them if requested
+      if (transition === true) {
+        chart.areas.xaxis.transition().duration(250)
+          .call(chart.layers.xaxis);
+        chart.areas.xaxistop.transition().duration(250)
+          .call(chart.layers.xaxistop);
+        chart.areas.xgrid.transition().duration(250)
+          .call(chart.layers.xgrid);
+        chart.areas.yaxis.transition().duration(250)
+          .call(chart.layers.yaxis);
+        chart.areas.yaxisright.transition().duration(250)
+          .call(chart.layers.yaxisright);
+        chart.areas.ygrid.transition().duration(250)
+          .call(chart.layers.ygrid);
+      } else {
+        chart.areas.xaxis
+          .call(chart.layers.xaxis);
+        chart.areas.xaxistop
+          .call(chart.layers.xaxistop);
+        chart.areas.xgrid
+          .call(chart.layers.xgrid);
+        chart.areas.yaxis
+          .call(chart.layers.yaxis);
+        chart.areas.yaxisright
+          .call(chart.layers.yaxisright);
+        chart.areas.ygrid
+          .call(chart.layers.ygrid);
       }
 
       return chart;
@@ -395,6 +421,24 @@
       return chart;
     },
 
+    /* Get or set the animation flag.
+     *
+     * When true, the chart animates when updating due to width, height, and
+     * scale changes (e.g. when zooming).
+     *
+     * newAnimate - Value to set for the animation flag.
+     *
+     * Returns the animation flag if no argument is given, else the chart.
+     */
+    animate: function(newAnimate) {
+      var chart = this;
+      if (arguments.length === 0) {
+        return chart._animate;
+      }
+      chart._animate = newAnimate;
+      return chart;
+    },
+
     /* Returns the list of plotable objects belonging to the chart.
      */
     plotables: function() {
@@ -426,7 +470,7 @@
         // Applying the clipping path to the chart area
         .attr('clip-path', 'url(#' + chart.clipPath.attr('id') + ')');
       chart.setDomain();
-      chart.draw();
+      chart.draw(false);
       return chart;
     },
 
@@ -443,7 +487,7 @@
       delete chart._plotables[plotableName];
       delete chart._layers[plotableName];
       chart.setDomain();
-      chart.draw();
+      chart.draw(false);
       return chart;
     },
 
@@ -517,14 +561,13 @@
         if (plotable.zDomain !== undefined) {
           zDomain = d3.extent(plotable.zDomain().concat(zDomain));
         }
-        plotable.draw(chart, chart._layers[name]);
       }
       xDomain = xDomain.length === 0 ? [0, 1] : xDomain;
       yDomain = yDomain.length === 0 ? [0, 1] : yDomain;
       zDomain = zDomain.length === 0 ? [0, 1] : zDomain;
       chart.xScale.domain(xDomain);
       chart.yScale.domain(yDomain);
-      chart.zScale.domain([zDomain[0], zDomain[1]/2, zDomain[1]]);
+      chart.zScale.domain([zDomain[0], zDomain[1]/2.0, zDomain[1]]);
     },
 
     /* Draw the z scale.
@@ -546,14 +589,6 @@
               .append('g')
               .attr('class', 'zscale-item')
               .attr('transform', function(d, i) { return 'translate(0, ' + (i*cellHeight) + ')'; });
-
-      // Add 70px to the right-side margin to make room for the scale
-      // We don't want to add the margin multiple times, so check/create a flag
-      if (chart._hasZScale !== true) {
-        chart.margins.right += 70;
-        chart.updateContainerWidth();
-        chart._hasZScale = true;
-      }
 
       // Draw colour cells
       zscaleItem.append('rect')

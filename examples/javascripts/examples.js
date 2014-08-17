@@ -76,7 +76,8 @@
       .yAxisLabel('Frequency');
   var h2DGauss = makeChart(d3.select('#h2'))
       .xAxisLabel('x')
-      .yAxisLabel('y');
+      .yAxisLabel('y')
+      .animate(false);
   var lineChart = d3.select('#h3').append('svg')
       .chart('AxesChart')
       .width(450)

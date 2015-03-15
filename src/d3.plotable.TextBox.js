@@ -21,7 +21,7 @@
  * -------------
  * The possible configuration keys are:
  *
- * * `color`: The color of the text as a CSS-compatiable string
+ * * `color`: The color of the text as a CSS-compatible string
  *            (default: '#000000')
  * * `x`: Initial position of the top-left corner of the box along x in px
  *        (default: 10)

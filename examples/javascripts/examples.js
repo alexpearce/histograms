@@ -51,7 +51,7 @@
   var gaussian = formatData(gaussianData),
       landau = formatData(landauData),
       steps = formatData({
-        'values': [0, 1, 2, 3, 4, 5],
+        'values': [0.25, 1, 2, 3, 4, 5],
         'binning': [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]],
         'uncertainties': [[0, 0.2], [0.2, 0.7], [0.3, 0.2], [0.2, 0.2], [0.2, 0.3], [0.2, 0.6]]
       });
@@ -74,11 +74,14 @@
   var hGauss = makeChart(d3.select('#h1'))
       .xAxisLabel('Vertex position [mm]')
       .yAxisLabel('Frequency');
-  var h2DGauss = makeChart(d3.select('#h2'))
+  var hLines = makeChart(d3.select('#h1'))
+      .xAxisLabel('Interactions')
+      .yAxisLabel('Frequency');
+  var h2DGauss = makeChart(d3.select('#h3'))
       .xAxisLabel('x')
       .yAxisLabel('y')
       .animate(false);
-  var lineChart = d3.select('#h3').append('svg')
+  var lineChart = d3.select('#h4').append('svg')
       .chart('AxesChart')
       .width(450)
       .height(400);
@@ -95,6 +98,7 @@
   hGauss.addPlotable(d3.plotable.Histogram('gaussian', gaussian));
   hGauss.addPlotable(d3.plotable.Histogram('landau', landau));
   hGauss.addOrnament(d3.plotable.TextBox('gaussianInfo', gaussianInfo));
+  hLines.addPlotable(d3.plotable.Histogram('steps', steps, {closed: false, color: 'red'}));
   h2DGauss.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
   lineChart.addPlotable(d3.plotable.LineChart('sinc', sinc));
   lineChart.addPlotable(d3.plotable.LineChart('line', line, {showPoints: true, showUncertainties: true, interpolation: 'linear', color: 'green'}));

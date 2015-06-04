@@ -27,6 +27,8 @@
  *               yMinimum will be overrided.
  * * `showUncertainties`: Show the uncertainties on each bin as error bars (default: false).
  *                        This requires the `yerr` key on each data object.
+ * * `closed`: 'Close' the histogram line around the x-axis, such that the first and last bins
+ *             have edges that meet the x-axis (default: false).
  */
 (function(d3, undefined) {
   'use strict';
@@ -44,6 +46,9 @@
     if (config.showUncertainties === undefined) {
       config.showUncertainties = false;
     }
+    if (config.closed === undefined) {
+      config.closed = true;
+    }
     // Add zero'd uncertainties if none are present
     for (var i = 0; i < data.length; i++) {
       var datum = data[i];
@@ -56,6 +61,7 @@
       name: name,
       data: data,
       color: config.color,
+      closed: config.closed,
       yMinimum: config.yMinimum,
       showUncertainties: config.showUncertainties,
       xDomain: function() {
@@ -81,19 +87,33 @@
           transition = false;
         }
         g.classed('Histogram', true);
+
         // Prepend a datum to the data for drawing, defining the beginning of
         // the line area
         // If this datum is not added, the lower edge of the first bin is hidden
         var firstBinEdge = data[0].xlow,
-            zeroEl = [{xlow: firstBinEdge, xhigh: firstBinEdge, y: this.yDomain()[0], yerr: [0, 0]}],
+            firstBinHeight = this.closed === true ? this.yDomain()[0] : data[0].y,
+            zeroEl = [{xlow: firstBinEdge, xhigh: firstBinEdge, y: firstBinHeight, yerr: [0, 0]}],
             drawnData = zeroEl.concat(this.data);
-        // The histogram line
-        var linearea = d3.svg.area()
-              .interpolate('step-before')
-              .x(function(d) { return axes.xScale(d.xhigh); })
-              .y1(function(d) { return axes.yScale(d.y); })
-              .y0(axes.yScale(this.yMinimum)),
-            join = g.selectAll('path.line').data([drawnData]),
+
+        // If the histogram line should be closed, use svg.area to automatically
+        // generate the bin edges in the lowest and highest bins, else use svg.line
+        var linearea;
+        if (this.closed === true) {
+          linearea = d3.svg.area()
+            .interpolate('step-before')
+            .x(function(d) { return axes.xScale(d.xhigh); })
+            .y(function(d) { return axes.yScale(d.y); })
+            .y0(axes.yScale(this.yMinimum));
+        } else {
+          linearea = d3.svg.line()
+            .interpolate('step-before')
+            .x(function(d) { return axes.xScale(d.xhigh); })
+            .y(function(d) { return axes.yScale(d.y); });
+        }
+
+        // Join the data with the lineshape
+        var join = g.selectAll('path.line').data([drawnData]),
             selection = transition === true ? join.transition().duration(250) : join;
         join.enter()
           .append('path')
@@ -101,6 +121,7 @@
           .attr('fill', 'none')
           .attr('stroke', this.color);
         selection.attr('d', linearea);
+
         // Uncertainties
         var uJoin = g.selectAll('path.uncertainty').data(this.data),
             uSelection = transition === true ? uJoin.transition().duration(250) : uJoin;

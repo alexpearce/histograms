@@ -80,8 +80,21 @@
 (function(d3, undefined) {
   'use strict';
   d3.chart('BaseChart').extend('AxesChart', {
-    initialize: function() {
+    initialize: function(config) {
       var chart = this;
+
+      var LINEAR_SCALE = 'linear',
+          LOG_SCALE = 'log';
+
+      if (config === undefined) {
+        config = {};
+      }
+      if (config.zScale === undefined) {
+        config.zScale = LINEAR_SCALE;
+      }
+
+      // Expose the configuration
+      chart.config = config;
 
       // Define blank x- and y-axis labels, zero the exponents
       chart._xAxisLabel = '';
@@ -94,10 +107,17 @@
       chart.xScale = d3.scale.linear()
         .range([0, chart.width()])
         .domain([0, 1]);
+
       chart.yScale = d3.scale.linear()
         .range([chart.height(), 0])
         .domain([0, 1]);
-      chart.zScale = d3.scale.linear()
+
+      if (chart.config.zScale === LOG_SCALE) {
+        chart.zScale = d3.scale.log();
+      } else {
+        chart.zScale = d3.scale.linear();
+      }
+      chart.zScale
         .range(['#2c7bb6', '#ffffbf', '#d7191c'])
         .interpolate(d3.interpolateHcl);
 

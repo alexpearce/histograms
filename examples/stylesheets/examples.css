@@ -70,6 +70,10 @@ body {
   fill: #ddd;
 }
 
+.zscale-item {
+  shape-rendering: crispEdges;
+}
+
 .zscale-box {
   stroke: #000;
   stroke-width: 1px;

@@ -1,9 +1,9 @@
 (function(window, document, undefined) {
   'use strict';
   // Create an SVG element and create an AxesChart inside it
-  var makeChart = function(container) {
+  var makeChart = function(container, opts) {
     return container.append('svg')
-      .chart('AxesChart')
+      .chart('AxesChart', opts)
       .width(450)
       .height(400);
   };
@@ -78,7 +78,11 @@
       .xAxisLabel('x')
       .yAxisLabel('y')
       .animate(false);
-  var lineChart = d3.select('#h3').append('svg')
+  var h2DGaussLog = makeChart(d3.select('#h3'), {zScale: 'log'})
+      .xAxisLabel('x')
+      .yAxisLabel('y')
+      .animate(false);
+  var lineChart = d3.select('#h4').append('svg')
       .chart('AxesChart')
       .width(450)
       .height(400);
@@ -96,6 +100,7 @@
   hGauss.addPlotable(d3.plotable.Histogram('landau', landau));
   hGauss.addOrnament(d3.plotable.TextBox('gaussianInfo', gaussianInfo));
   h2DGauss.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
+  h2DGaussLog.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
   lineChart.addPlotable(d3.plotable.LineChart('sinc', sinc));
   lineChart.addPlotable(d3.plotable.LineChart('line', line, {showPoints: true, showUncertainties: true, interpolation: 'linear', color: 'green'}));
 })(window, window.document);

@@ -567,7 +567,7 @@
       zDomain = zDomain.length === 0 ? [0, 1] : zDomain;
       chart.xScale.domain(xDomain);
       chart.yScale.domain(yDomain);
-      chart.zScale.domain([zDomain[0], zDomain[1]/2.0, zDomain[1]]);
+      chart.zScale.domain([zDomain[0], (zDomain[1] - zDomain[0])/2.0, zDomain[1]]);
     },
 
     /* Draw the z scale.

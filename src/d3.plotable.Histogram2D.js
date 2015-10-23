@@ -2,6 +2,8 @@
  * d3.plotable.Histogram2D
  *
  * d3.plotable which draws a two-dimensional histogram.
+ * It is assumed that all bins contain positive values.
+ * Bins with no content are drawn with no fill.
  *
  * Data API
  * --------
@@ -44,8 +46,9 @@
         return [yLowExtent[0], yHighExtent[1]];
       },
       zDomain: function() {
-        var zMax = d3.max(this.data, function(d) { return d.z; });
-        return [0, zMax/2, zMax];
+        var filtered = this.data.filter(function(d) { return d.z > 0; }),
+            zExtent = d3.extent(filtered, function(d) { return d.z; });
+        return [zExtent[0], (zExtent[1] - zExtent[0])/2.0, zExtent[1]];
       },
       draw: function(axes, g, transition) {
         if (arguments.length === 0) {
@@ -66,7 +69,7 @@
           .attr('y', function(d) { return axes.yScale(d.yhigh); })
           .attr('width', function(d) { return axes.xScale(d.xhigh) - axes.xScale(d.xlow); })
           .attr('height', function(d) { return axes.yScale(d.ylow) - axes.yScale(d.yhigh); })
-          .style('fill', function(d) { return axes.zScale(d.z); });
+          .style('fill', function(d) { return d.z > 0 ? axes.zScale(d.z) : 'none'; });
       }
     };
   };

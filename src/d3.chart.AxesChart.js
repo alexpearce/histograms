@@ -89,6 +89,12 @@
       if (config === undefined) {
         config = {};
       }
+      if (config.xScale === undefined) {
+        config.xScale = LINEAR_SCALE;
+      }
+      if (config.yScale === undefined) {
+        config.yScale = LINEAR_SCALE;
+      }
       if (config.zScale === undefined) {
         config.zScale = LINEAR_SCALE;
       }
@@ -104,11 +110,21 @@
       chart._animate = true;
 
       // Transform scales: go from data coordinates (domain) to canvas coordinates (range)
-      chart.xScale = d3.scale.linear()
+      if (chart.config.xScale === LOG_SCALE) {
+        chart.xScale = d3.scale.log();
+      } else {
+        chart.xScale = d3.scale.linear();
+      }
+      chart.xScale
         .range([0, chart.width()])
         .domain([0, 1]);
 
-      chart.yScale = d3.scale.linear()
+      if (chart.config.yScale === LOG_SCALE) {
+        chart.yScale = d3.scale.log();
+      } else {
+        chart.yScale = d3.scale.linear();
+      }
+      chart.yScale
         .range([chart.height(), 0])
         .domain([0, 1]);
 
@@ -218,8 +234,13 @@
         chart._yExponent = exp;
         chart.yAxisLabel(chart.yAxisLabel());
       });
-      chart.layers.xaxis.tickFormat(xFormatter);
-      chart.layers.yaxis.tickFormat(yFormatter);
+      // Don't need to format powers with a logarithm scale
+      if (chart.config.xScale !== LOG_SCALE) {
+        chart.layers.xaxis.tickFormat(xFormatter);
+      }
+      if (chart.config.yScale !== LOG_SCALE) {
+        chart.layers.yaxis.tickFormat(yFormatter);
+      }
 
       // Add a clipping path to hide histogram outside chart area
       chart.clipPath = chart.base.append('defs').append('clipPath')

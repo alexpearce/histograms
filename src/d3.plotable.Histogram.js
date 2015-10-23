@@ -47,6 +47,10 @@
     // Add zero'd uncertainties if none are present
     for (var i = 0; i < data.length; i++) {
       var datum = data[i];
+      // Truncate y values below the minimum
+      // This is primarily done for log plots, where the user should specify
+      // a yMinimum greater than zero to prevent zero-values causing NaN values
+      datum.y = datum.y > config.yMinimum ? datum.y : config.yMinimum;
       if (!('yerr' in datum)) {
         datum.yerr = [0, 0];
       }

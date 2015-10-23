@@ -74,6 +74,9 @@
   var hGauss = makeChart(d3.select('#h1'))
       .xAxisLabel('Vertex position [mm]')
       .yAxisLabel('Frequency');
+  var hGaussLog = makeChart(d3.select('#h1-log'), {yScale: 'log'})
+      .xAxisLabel('Vertex position [mm]')
+      .yAxisLabel('Frequency');
   var h2DGauss = makeChart(d3.select('#h2'))
       .xAxisLabel('x')
       .yAxisLabel('y')
@@ -99,6 +102,9 @@
   hGauss.addPlotable(d3.plotable.Histogram('gaussian', gaussian));
   hGauss.addPlotable(d3.plotable.Histogram('landau', landau));
   hGauss.addOrnament(d3.plotable.TextBox('gaussianInfo', gaussianInfo));
+  // The data contains zero-values, but hGaussLog has a log scale on the y-axis,
+  // so truncate the zero-values by setting a greater-than-zero yMinimum
+  hGaussLog.addPlotable(d3.plotable.Histogram('gaussian', gaussian, {yMinimum: 0.01}));
   h2DGauss.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
   h2DGaussLog.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
   lineChart.addPlotable(d3.plotable.LineChart('sinc', sinc));

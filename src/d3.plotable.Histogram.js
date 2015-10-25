@@ -28,7 +28,7 @@
  * * `showUncertainties`: Show the uncertainties on each bin as error bars (default: false).
  *                        This requires the `yerr` key on each data object.
  * * `closed`: 'Close' the histogram line around the x-axis, such that the first and last bins
- *             have edges that meet the x-axis (default: false).
+ *             have edges that meet the x-axis (default: true).
  */
 (function(d3, undefined) {
   'use strict';

@@ -89,6 +89,11 @@
       .chart('AxesChart')
       .width(450)
       .height(400);
+  var timeSeriesChart = d3.select('#h5').append('svg')
+      .chart('AxesChart', {xScale: 'time'})
+      .yAxisLabel('Rate [Hz]')
+      .width(450)
+      .height(400);
 
   var gaussianInfo = [
     ['Name', 'Gaussian'],
@@ -96,6 +101,7 @@
     ['Mean', '0.0'],
     ['RMS', '1.0']
   ];
+  var colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 
   // Draw plotables on to charts
   hGauss.addPlotable(d3.plotable.Histogram('steps', steps, {showUncertainties: true}));
@@ -109,4 +115,13 @@
   h2DGaussLog.addPlotable(d3.plotable.Histogram2D('gaussian2d', data2d.data));
   lineChart.addPlotable(d3.plotable.LineChart('sinc', sinc));
   lineChart.addPlotable(d3.plotable.LineChart('line', line, {showPoints: true, showUncertainties: true, interpolation: 'linear', color: 'green'}));
+  for (var i = 0; i < timeSeriesData.length; i++) {
+    // Need to make each plotable have a unique name
+    console.log(timeSeriesData[i].length);
+    timeSeriesChart.addPlotable(d3.plotable.LineChart(
+      'hltRate' + i,
+      timeSeriesData[i],
+      {interpolation: 'linear', color: colors[i]}
+    ));
+  }
 })(window, window.document);

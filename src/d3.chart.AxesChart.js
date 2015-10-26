@@ -84,7 +84,8 @@
       var chart = this;
 
       var LINEAR_SCALE = 'linear',
-          LOG_SCALE = 'log';
+          LOG_SCALE = 'log',
+          TIME_SCALE = 'time';
 
       if (config === undefined) {
         config = {};
@@ -114,6 +115,9 @@
         chart.xScale = d3.scale.log();
       } else {
         chart.xScale = d3.scale.linear();
+      }
+      if (chart.config.xScale === TIME_SCALE) {
+        chart.xScale = d3.time.scale();
       }
       chart.xScale
         .range([0, chart.width()])
@@ -234,11 +238,11 @@
         chart._yExponent = exp;
         chart.yAxisLabel(chart.yAxisLabel());
       });
-      // Don't need to format powers with a logarithm scale
-      if (chart.config.xScale !== LOG_SCALE) {
+      // Only format powers with a linear scale
+      if (chart.config.xScale === LINEAR_SCALE) {
         chart.layers.xaxis.tickFormat(xFormatter);
       }
-      if (chart.config.yScale !== LOG_SCALE) {
+      if (chart.config.yScale === LINEAR_SCALE) {
         chart.layers.yaxis.tickFormat(yFormatter);
       }
 

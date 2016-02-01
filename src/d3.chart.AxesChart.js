@@ -27,6 +27,12 @@
  * * `xScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
  * * `yScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
  * * `zScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `xFormatExponent`: Format the x-axis values n scientific notation, showing the
+ *                      mantissa on the axis itself and `10^n` next to the axis label
+ *                      (default: true)
+ * * `yFormatExponent`: Format the y-axis values n scientific notation, showing the
+ *                      mantissa on the axis itself and `10^n` next to the axis label
+ *                      (default: true)
  *
  * A chart may be initialised with options like this:
  *
@@ -42,9 +48,11 @@
  * below and above the plot area, and the y axis is drawn left and right.
  * Only the x axis on the bottom and y axis on the left are given labels, but
  * all axes and given tick markings.
- * Both axes are formatted in SI notation, meaning that if the tick numbers
- * are large enough to warrant an exponent, the exponent is rounded to the
- * nearest multiple of three (e.g. 10^3, 10^-9).
+ * Both axes are formatted in SI notation by default, meaning that if the tick
+ * numbers are large enough to warrant an exponent, the exponent is rounded to
+ * the nearest multiple of three (e.g. 10^3, 10^-9).
+ * This behaviour can be changed with the xFormatExponent and yFormatExponent
+ * configuration properties.
  * A z axis, if required, is drawn to the right of the plot area.
  *
  * Plotables
@@ -116,6 +124,12 @@
       if (config.zScale === undefined) {
         config.zScale = LINEAR_SCALE;
       }
+      if (config.xFormatExponent === undefined) {
+        config.xFormatExponent = true;
+      }
+      if (config.yFormatExponent === undefined) {
+        config.yFormatExponent = true;
+      }
 
       // Expose the configuration
       chart.config = config;
@@ -125,6 +139,8 @@
       chart._yAxisLabel = '';
       chart._xExponent = 0;
       chart._yExponent = 0;
+      chart._xFormatExponent = config.xFormatExponent;
+      chart._yFormatExponent = config.yFormatExponent;
       chart._animate = true;
 
       // Transform scales: go from data coordinates (domain) to canvas coordinates (range)
@@ -255,11 +271,11 @@
         chart._yExponent = exp;
         chart.yAxisLabel(chart.yAxisLabel());
       });
-      // Only format powers with a linear scale
-      if (chart.config.xScale === LINEAR_SCALE) {
+      // Only format powers with a linear scale and when requested to do so
+      if (chart.config.xScale === LINEAR_SCALE && chart.xFormatExponent()) {
         chart.layers.xaxis.tickFormat(xFormatter);
       }
-      if (chart.config.yScale === LINEAR_SCALE) {
+      if (chart.config.yScale === LINEAR_SCALE && chart.yFormatExponent()) {
         chart.layers.yaxis.tickFormat(yFormatter);
       }
 

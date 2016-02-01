@@ -458,10 +458,10 @@
         chart.yAxisLabel(chart.yAxisLabel());
       });
       // Only format powers with a linear scale and when requested to do so
-      if (chart.config.xScale === LINEAR_SCALE && chart.xFormatExponent) {
+      if (chart.config.xScale === LINEAR_SCALE && chart._xFormatExponent) {
         chart.layers.xaxis.tickFormat(xFormatter);
       }
-      if (chart.config.yScale === LINEAR_SCALE && chart.yFormatExponent) {
+      if (chart.config.yScale === LINEAR_SCALE && chart._yFormatExponent) {
         chart.layers.yaxis.tickFormat(yFormatter);
       }
 

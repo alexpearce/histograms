@@ -1,5 +1,11 @@
 ## [Master](https://github.com/alexpearce/histograms/tree/master)
 
+## [0.0.9](https://github.com/alexpearce/histograms/tree/v0.0.9)
+
+Bugfixes:
+
+  - Fix another dumb typo. Yes, I am a bad maintainer.
+
 ## [0.0.8](https://github.com/alexpearce/histograms/tree/v0.0.8)
 
 Bugfixes:

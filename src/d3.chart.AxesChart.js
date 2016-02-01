@@ -17,6 +17,23 @@
  * * `yAxisLabel`: Getter/setter method for the y-axis label
  * * `animate`: Getter/setter method for animation flag
  *
+ * Configuration
+ * -------------
+ *
+ * Some configuration of the chart can currently only be done on
+ * initialisation, in which case the configuration values must be passed to the
+ * chart constructor as a object. The properties of this object can be:
+ *
+ * * `xScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `yScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `zScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ *
+ * A chart may be initialised with options like this:
+ *
+ *   var chart = d3.select('#chart')
+ *                  .append('svg')
+ *                 .chart('AxesChart', {xScale: 'log'});
+ *
  * Axes
  * ----
  *

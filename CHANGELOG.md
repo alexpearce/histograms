@@ -1,5 +1,11 @@
 ## [Master](https://github.com/alexpearce/histograms/tree/master)
 
+## [0.0.8](https://github.com/alexpearce/histograms/tree/v0.0.8)
+
+Bugfixes:
+
+  - Fix dumb typo. Unit tests would be good.
+
 ## [0.0.7](https://github.com/alexpearce/histograms/tree/v0.0.7)
 
 This release introduces configuration at initialisation, where

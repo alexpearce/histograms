@@ -203,6 +203,29 @@
  * * `yAxisLabel`: Getter/setter method for the y-axis label
  * * `animate`: Getter/setter method for animation flag
  *
+ * Configuration
+ * -------------
+ *
+ * Some configuration of the chart can currently only be done on
+ * initialisation, in which case the configuration values must be passed to the
+ * chart constructor as a object. The properties of this object can be:
+ *
+ * * `xScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `yScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `zScale`: The scale of the x-axis (one of `linear` (default), `log`, and `time`)
+ * * `xFormatExponent`: Format the x-axis values n scientific notation, showing the
+ *                      mantissa on the axis itself and `10^n` next to the axis label
+ *                      (default: true)
+ * * `yFormatExponent`: Format the y-axis values n scientific notation, showing the
+ *                      mantissa on the axis itself and `10^n` next to the axis label
+ *                      (default: true)
+ *
+ * A chart may be initialised with options like this:
+ *
+ *   var chart = d3.select('#chart')
+ *                  .append('svg')
+ *                 .chart('AxesChart', {xScale: 'log'});
+ *
  * Axes
  * ----
  *
@@ -211,9 +234,11 @@
  * below and above the plot area, and the y axis is drawn left and right.
  * Only the x axis on the bottom and y axis on the left are given labels, but
  * all axes and given tick markings.
- * Both axes are formatted in SI notation, meaning that if the tick numbers
- * are large enough to warrant an exponent, the exponent is rounded to the
- * nearest multiple of three (e.g. 10^3, 10^-9).
+ * Both axes are formatted in SI notation by default, meaning that if the tick
+ * numbers are large enough to warrant an exponent, the exponent is rounded to
+ * the nearest multiple of three (e.g. 10^3, 10^-9).
+ * This behaviour can be changed with the xFormatExponent and yFormatExponent
+ * configuration properties.
  * A z axis, if required, is drawn to the right of the plot area.
  *
  * Plotables
@@ -266,24 +291,72 @@
 (function(d3, undefined) {
   'use strict';
   d3.chart('BaseChart').extend('AxesChart', {
-    initialize: function() {
+    initialize: function(config) {
       var chart = this;
+
+      var LINEAR_SCALE = 'linear',
+          LOG_SCALE = 'log',
+          TIME_SCALE = 'time';
+
+      if (config === undefined) {
+        config = {};
+      }
+      if (config.xScale === undefined) {
+        config.xScale = LINEAR_SCALE;
+      }
+      if (config.yScale === undefined) {
+        config.yScale = LINEAR_SCALE;
+      }
+      if (config.zScale === undefined) {
+        config.zScale = LINEAR_SCALE;
+      }
+      if (config.xFormatExponent === undefined) {
+        config.xFormatExponent = true;
+      }
+      if (config.yFormatExponent === undefined) {
+        config.yFormatExponent = true;
+      }
+
+      // Expose the configuration
+      chart.config = config;
 
       // Define blank x- and y-axis labels, zero the exponents
       chart._xAxisLabel = '';
       chart._yAxisLabel = '';
       chart._xExponent = 0;
       chart._yExponent = 0;
+      chart._xFormatExponent = config.xFormatExponent;
+      chart._yFormatExponent = config.yFormatExponent;
       chart._animate = true;
 
       // Transform scales: go from data coordinates (domain) to canvas coordinates (range)
-      chart.xScale = d3.scale.linear()
+      if (chart.config.xScale === LOG_SCALE) {
+        chart.xScale = d3.scale.log();
+      } else {
+        chart.xScale = d3.scale.linear();
+      }
+      if (chart.config.xScale === TIME_SCALE) {
+        chart.xScale = d3.time.scale();
+      }
+      chart.xScale
         .range([0, chart.width()])
         .domain([0, 1]);
-      chart.yScale = d3.scale.linear()
+
+      if (chart.config.yScale === LOG_SCALE) {
+        chart.yScale = d3.scale.log();
+      } else {
+        chart.yScale = d3.scale.linear();
+      }
+      chart.yScale
         .range([chart.height(), 0])
         .domain([0, 1]);
-      chart.zScale = d3.scale.linear()
+
+      if (chart.config.zScale === LOG_SCALE) {
+        chart.zScale = d3.scale.log();
+      } else {
+        chart.zScale = d3.scale.linear();
+      }
+      chart.zScale
         .range(['#2c7bb6', '#ffffbf', '#d7191c'])
         .interpolate(d3.interpolateHcl);
 
@@ -384,8 +457,13 @@
         chart._yExponent = exp;
         chart.yAxisLabel(chart.yAxisLabel());
       });
-      chart.layers.xaxis.tickFormat(xFormatter);
-      chart.layers.yaxis.tickFormat(yFormatter);
+      // Only format powers with a linear scale and when requested to do so
+      if (chart.config.xScale === LINEAR_SCALE && chart.xFormatExponent()) {
+        chart.layers.xaxis.tickFormat(xFormatter);
+      }
+      if (chart.config.yScale === LINEAR_SCALE && chart.yFormatExponent()) {
+        chart.layers.yaxis.tickFormat(yFormatter);
+      }
 
       // Add a clipping path to hide histogram outside chart area
       chart.clipPath = chart.base.append('defs').append('clipPath')
@@ -753,7 +831,7 @@
       zDomain = zDomain.length === 0 ? [0, 1] : zDomain;
       chart.xScale.domain(xDomain);
       chart.yScale.domain(yDomain);
-      chart.zScale.domain([zDomain[0], zDomain[1]/2.0, zDomain[1]]);
+      chart.zScale.domain([zDomain[0], (zDomain[1] - zDomain[0])/2.0, zDomain[1]]);
     },
 
     /* Draw the z scale.
@@ -822,7 +900,7 @@
  * -------------
  * The possible configuration keys are:
  *
- * * `color`: The color of the text as a CSS-compatiable string
+ * * `color`: The color of the text as a CSS-compatible string
  *            (default: '#000000')
  * * `x`: Initial position of the top-left corner of the box along x in px
  *        (default: 10)
@@ -951,6 +1029,10 @@
     // Add zero'd uncertainties if none are present
     for (var i = 0; i < data.length; i++) {
       var datum = data[i];
+      // Truncate y values below the minimum
+      // This is primarily done for log plots, where the user should specify
+      // a yMinimum greater than zero to prevent zero-values causing NaN values
+      datum.y = datum.y > config.yMinimum ? datum.y : config.yMinimum;
       if (!('yerr' in datum)) {
         datum.yerr = [0, 0];
       }
@@ -1041,6 +1123,8 @@
  * d3.plotable.Histogram2D
  *
  * d3.plotable which draws a two-dimensional histogram.
+ * It is assumed that all bins contain positive values.
+ * Bins with no content are drawn with no fill.
  *
  * Data API
  * --------
@@ -1083,8 +1167,9 @@
         return [yLowExtent[0], yHighExtent[1]];
       },
       zDomain: function() {
-        var zMax = d3.max(this.data, function(d) { return d.z; });
-        return [0, zMax/2, zMax];
+        var filtered = this.data.filter(function(d) { return d.z > 0; }),
+            zExtent = d3.extent(filtered, function(d) { return d.z; });
+        return [zExtent[0], (zExtent[1] - zExtent[0])/2.0, zExtent[1]];
       },
       draw: function(axes, g, transition) {
         if (arguments.length === 0) {
@@ -1105,7 +1190,7 @@
           .attr('y', function(d) { return axes.yScale(d.yhigh); })
           .attr('width', function(d) { return axes.xScale(d.xhigh) - axes.xScale(d.xlow); })
           .attr('height', function(d) { return axes.yScale(d.ylow) - axes.yScale(d.yhigh); })
-          .style('fill', function(d) { return axes.zScale(d.z); });
+          .style('fill', function(d) { return d.z > 0 ? axes.zScale(d.z) : 'none'; });
       }
     };
   };
